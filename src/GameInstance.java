@@ -5,6 +5,8 @@ public class GameInstance {
     // liste des possibilités d'échiquier à partir des positions actuelles
     private ArrayList<GameInstance> children;
     private boolean gameOver;
+    private int depth;
+    private GameInstance parent;
     private int[][] grid;
     private int nbNoirs;
     private int nbBlancs;
@@ -28,8 +30,8 @@ public class GameInstance {
     }
     public GameInstance(int[][] grid){
         this.grid = grid;
-        //verifie si la partie est terminée
-        checkGameOver();
+        rate();
+        //verifie si la partie est terminée et genere les enfants sinon
         if(!gameOver){
             this.children = generateChildren();
         }
@@ -38,18 +40,21 @@ public class GameInstance {
     public ArrayList<GameInstance> getChildren(){
         return this.children;
     }
-
     public boolean gameIsOver(){
         return this.gameOver;
     }
 
     // TO DO
-    //verifie si la partie est terminée
-    private void checkGameOver(){
+    // Determine un score pour la situation actuelle d'un échiquier && determine si le joueur a gagné
+    // Idée: +1 pour chaque jeton collé de maxPlayer et -1 pour chaque jeton collé de l'autre
+    public int rate(){
+        this.gameOver = false;
+        int rate = 0;
+        return rate;
     }
 
     // TO DO
-    // genere la liste des echiquiers possibles (generateMovements)
+    // genere la liste des echiquiers possibles a partir du plateau courant (generateMovements)
     public ArrayList<GameInstance> generateChildren(){
         ArrayList<GameInstance> children = new ArrayList<GameInstance>();
         return children;

@@ -8,7 +8,7 @@ public class App {
     // Minimax + alpha-beta pruning
     int minimax(GameInstance gameInstance, int depth, boolean isMaxPlayer, int alpha, int beta){
         if (depth == 0 || gameInstance.gameIsOver()){
-            return rate(gameInstance);
+            return gameInstance.rate();
         }
         if (isMaxPlayer){
             int maxRating = -1000000000;
@@ -36,11 +36,5 @@ public class App {
             }
             return minRating;
         }
-    }
-    // TO DO
-    // Determine un score pour la situation actuelle d'un échiquier
-    public int rate(GameInstance gameinstance){
-        int rate = 0;
-        return rate;
     }
 }
