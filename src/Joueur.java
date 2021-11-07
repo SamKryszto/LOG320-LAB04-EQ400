@@ -25,4 +25,8 @@ public class Joueur {
     public void addJeton(Jeton jeton) {
         this.listeJeton.add(jeton);
     }
+
+    public ArrayList<Jeton> getListeJeton() {
+        return this.listeJeton;
+    }
 }

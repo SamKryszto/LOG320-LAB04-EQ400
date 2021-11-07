@@ -1,7 +1,5 @@
 import java.util.ArrayList;
 
-import javax.sound.sampled.SourceDataLine;
-
 public class GameInstance {
 
     // liste des possibilités d'échiquier à partir des positions actuelles
@@ -27,6 +25,10 @@ public class GameInstance {
         this.Jblanc = new Joueur(true, new ArrayList<Jeton>());
         this.Jnoir = new Joueur(false, new ArrayList<Jeton>());
 
+    }
+
+    public void setGrid(int[][] grid) {
+        this.grid = grid;
     }
 
     public GameInstance(int[][] grid) {
@@ -67,32 +69,53 @@ public class GameInstance {
     public int rate() {
         this.gameOver = false;
         int rate = 0;
+        ArrayList<Jeton> listeJetonNoir = Jnoir.getListeJeton();
+        int maxNoir = 0;
+        for (Jeton j : listeJetonNoir) {
+            int nbPieceN = nbPieceConnecte(2, j.getPosX(), j.getPosY(), new boolean[8][8]);
+            if (maxNoir < nbPieceN) {
+                maxNoir = nbPieceN;
+            }
+        }
 
+        ArrayList<Jeton> listeJetonBlanc = Jblanc.getListeJeton();
+        int maxBlanc = 0;
+        for (Jeton j : listeJetonBlanc) {
+            int nbPieceB = nbPieceConnecte(4, j.getPosX(), j.getPosY(), new boolean[8][8]);
+            if (maxBlanc < nbPieceB) {
+                maxBlanc = nbPieceB;
+            }
+        }
+
+        rate = maxNoir - maxBlanc;
         return rate;
     }
 
-    public void calculVictoire(int joueur, int row, int col, int[][] grid) {
+    public void calculVictoire(int joueur, int row, int col) {
         if (joueur == 4) {
-            if (nbPieceConnecte(joueur, row, col, grid) == nbBlancs) {
+            if (nbPieceConnecte(joueur, row, col, new boolean[8][8]) == nbBlancs) {
                 System.out.println("Victoire du joueur blanc !");
             }
         } else if (joueur == 2) {
-            if (nbPieceConnecte(joueur, row, col, grid) == nbNoirs) {
+            if (nbPieceConnecte(joueur, row, col, new boolean[8][8]) == nbNoirs) {
                 System.out.println("Victoire du joueur noir !");
             }
         }
     }
 
-    public int nbPieceConnecte(int joueur, int row, int col, int[][] grid) {
-        if (row < 0 || row > 7 || col < 0 || col > 7) {
-            if (grid[row][col] != joueur || grid[row][col] == 0) {
-                return 0;
-            }
+    public int nbPieceConnecte(int joueur, int row, int col, boolean[][] verifiedGrid) {
+        if (row < 0 || row > 7 || col < 0 || col > 7 || grid[row][col] != joueur || verifiedGrid[row][col]) {
+            return 0;
         }
-        return 1 + nbPieceConnecte(joueur, row - 1, col - 1, grid) + nbPieceConnecte(joueur, row - 1, col, grid)
-                + nbPieceConnecte(joueur, row - 1, col + 1, grid) + nbPieceConnecte(joueur, row, col - 1, grid)
-                + nbPieceConnecte(joueur, row, col + 1, grid) + nbPieceConnecte(joueur, row + 1, col - 1, grid)
-                + nbPieceConnecte(joueur, row + 1, col, grid) + nbPieceConnecte(joueur, row + 1, col + 1, grid);
+        verifiedGrid[row][col] = true;
+        return 1 + nbPieceConnecte(joueur, row - 1, col - 1, verifiedGrid)
+                + nbPieceConnecte(joueur, row - 1, col, verifiedGrid)
+                + nbPieceConnecte(joueur, row - 1, col + 1, verifiedGrid)
+                + nbPieceConnecte(joueur, row, col - 1, verifiedGrid)
+                + nbPieceConnecte(joueur, row, col + 1, verifiedGrid)
+                + nbPieceConnecte(joueur, row + 1, col + 1, verifiedGrid)
+                + nbPieceConnecte(joueur, row + 1, col, verifiedGrid)
+                + nbPieceConnecte(joueur, row + 1, col - 1, verifiedGrid);
 
     }
 
@@ -102,6 +125,10 @@ public class GameInstance {
     public ArrayList<GameInstance> generateChildren() {
         ArrayList<GameInstance> children = new ArrayList<GameInstance>();
         return children;
+    }
+
+    public int[][] getGrid() {
+        return this.grid;
     }
 
 }
