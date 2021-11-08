@@ -13,6 +13,9 @@ public class GameInstance {
     private Joueur Jblanc;
     private Joueur Jnoir;
 
+    //temp
+   private int score;
+
     // Échiquier initial
     public GameInstance() {
         this.nbBlancs = 8;
@@ -25,6 +28,14 @@ public class GameInstance {
         this.Jblanc = new Joueur(true, new ArrayList<Jeton>());
         this.Jnoir = new Joueur(false, new ArrayList<Jeton>());
 
+    }
+
+    //temp
+    public GameInstance(GameInstance parent, ArrayList<GameInstance> children, int score, int depth){
+        this.parent = parent;
+        this.children = children;
+        this.score = score;
+        this.depth = depth;
     }
 
     public void setGrid(int[][] grid) {
@@ -130,5 +141,11 @@ public class GameInstance {
     public int[][] getGrid() {
         return this.grid;
     }
+
+    //temp
+    public int getScore() {
+        return score;
+    }
+
 
 }
