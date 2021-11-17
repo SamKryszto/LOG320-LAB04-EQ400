@@ -13,6 +13,10 @@ public class GameInstance {
     private Joueur Jblanc;
     private Joueur Jnoir;
 
+    // temp
+    private char column = 'A';
+    private int row = 1;
+
     //temp
    private int score;
 
@@ -146,6 +150,27 @@ public class GameInstance {
     public int getScore() {
         return score;
     }
+    
+    /**
+     * Cette méthode renvoie un String représentant le prochain mouvement de l'algorithme de jeu. 
+     * 
+     * Le mouvement à jouer doit être de format : "C1" + "R1" + "C2" + "R2" où C1 et R1 sont respectivement 
+     * la lettre de colonne et le numéro de rangée initiales du pion à bouger et C2 et R2 sont respectivement 
+     * la lettre de colonne et le numéro de rangée du pion après le mouvement.
+     */
+    public String getNextMove() {
 
+        // À des fins de test, l'algorithme envoie pour l'instant une série de commandes peu stratégiques
+        String nextMove = String.valueOf(column) + row + String.valueOf(column) + (row + 2);
+        if (column != 'H') {
+            column++;
+        }
+        else {
+            column = 'A';
+            row++;
+        }
+        
 
+        return nextMove;
+    }
 }
