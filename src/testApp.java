@@ -2,8 +2,16 @@ import java.util.ArrayList;
 
 public class testApp {
     public static void main(String[] args) throws Exception {
+        int [][] gridInit = new int[][] { { 0, 2, 2, 2, 2, 2, 2, 0 }, { 4, 0, 0, 0, 0, 0, 0, 4 }, { 4, 0, 0, 0, 0, 0, 0, 4 },
+                { 4, 0, 0, 0, 0, 0, 0, 4 }, { 4, 0, 0, 0, 0, 0, 0, 4 }, { 4, 0, 0, 0, 0, 0, 0, 4 },
+                { 4, 0, 0, 0, 0, 0, 0, 4 }, { 0, 2, 2, 2, 2, 2, 2, 0 } };
+        int[][] gridRando = new int[][] { { 0, 0, 2, 0, 2, 2, 0, 0 }, { 4, 0, 0, 0, 0, 0, 0, 4 }, { 0, 0, 0, 4, 0, 2, 0, 4 },
+        { 4, 0, 0, 0, 2, 0, 0, 4 }, { 4, 2, 0, 0, 0, 0, 0, 4 }, { 4, 0, 2, 4, 0, 0, 0, 0 },
+        { 0, 0, 4, 2, 0, 0, 0, 4 }, { 0, 2, 0, 0, 2, 2, 2, 0 } };
+        testFindJetonsInARow(gridInit);
         //testFonctionEval(new GameInstance());
-        testMinimax();
+        //testMinimax();
+        
     }
 
     public static void testFonctionEval(GameInstance gameInstance) {
@@ -16,6 +24,153 @@ public class testApp {
 
     }
 
+    public static void testFindJetonsInARow(int[][] grid){
+
+        //Jetons dans chaque ligne et chaque diagonale
+        int[] jetonsEnLigne = new int[8];
+        int[] jetonsEnColonne = new int[8];
+
+        // NOSE = Nord Ouest à Sud Est et SONE = Sud Ouest à Nord Est // L = ligne C = Colonne
+        int[] jetonsEnDiagNOSEL = new int[8];
+        int[] jetonsEnDiagSONEL = new int[8];
+        int[] jetonsEnDiagNOSEC = new int[8];
+        int[] jetonsEnDiagSONEC = new int[8];
+        int[][] tabDiagNOSE = new int[8][8];
+        int[][] tabDiagSONE = new int[8][8];
+
+
+        // NO - SE - L  
+        for (int i = 0; i < 8 ; i++){
+            int temp= 0;
+            int c = 0;
+            for (int j = i ; j < 8; j++){
+                if(grid[j][c]==2||grid[j][c]==4){
+                    temp++;
+                }
+                c++;
+            }
+            jetonsEnDiagNOSEL[i]=temp;
+        }
+        // fill tab
+        for(int i = 0; i < 8 ; i++){
+            for (int j = 0; j <= i; j ++){
+                tabDiagNOSE[i][j] = jetonsEnDiagNOSEL[i-j];
+            }
+        }
+        // NO - SE - C
+        for (int i = 0; i < 8 ; i++){
+            int temp= 0;
+            int r = 0;
+            for (int j = i ; j < 8; j++){
+                if(grid[r][j]==2||grid[r][j]==4){
+                    temp++;
+                }
+                r++;
+            }
+            jetonsEnDiagNOSEC[i]=temp;
+        }
+        //fill tab
+        for(int i = 0; i < 8 ; i++){
+            for (int j = i; j < 8; j++){
+                tabDiagNOSE[i][j] = jetonsEnDiagNOSEC[j-i];
+            }
+        }
+
+
+        // SO - NE - L
+        for (int i = 7; i >=0 ; i--){
+            int temp = 0;
+            int r = 7;
+            for (int j = i ; j>=0; j--){
+                if(grid[r][j]==2||grid[r][j]==4){
+                    temp++;
+                }
+                r--;
+            }
+            jetonsEnDiagSONEL[i]=temp;
+        }
+
+        // fill tab
+        for(int i = 0; i <8 ; i++){
+            for (int j = i; j >=0; j--){
+                tabDiagSONE[j][i] = jetonsEnDiagSONEL[i-j];
+            }
+        }
+
+        // SO - NE - C
+        for (int i = 7; i >=0 ; i--){
+            int temp = 0;
+            int r = 7;
+            for (int j = i ; j>=0; j--){
+                if(grid[r][j]==2||grid[r][j]==4){
+                    temp++;
+                }
+                r--;
+            }
+            jetonsEnDiagSONEC[i]=temp;
+        }
+        /*
+        // fill tab
+        for(int i = 7; i >=0 ; i--){
+            for (int j = i; j >= 0; j --){
+                tabDiagSONE[j][i] = jetonsEnDiagSONEC[i-j];
+            }
+        }
+        */
+        
+        // Lines and columns
+        for (int r = 0; r < 8; r++){
+            for (int c = 0; c < 8; c++){
+                if(grid[r][c]==2||grid[r][c]==4){
+                    jetonsEnLigne[r]++;
+                    jetonsEnColonne[c]++;
+                }
+            }
+        }
+        System.out.println("grid: ");
+        printGrid(grid);
+        System.out.println("\njetons en ligne: ");
+        for(int i = 0; i < 8 ; i++){
+            System.out.print(jetonsEnLigne[i]);
+        }
+        System.out.println("\njetons en colonne: ");
+        for(int i = 0; i < 8 ; i++){
+            System.out.print(jetonsEnColonne[i]);
+        }
+        System.out.println("\njetons en diagNOSEL: ");
+        for(int i = 0; i < 8 ; i++){
+            System.out.print(jetonsEnDiagNOSEL[i]);
+        }
+        System.out.println("\njetons en diagNOSEC: ");
+        for(int i = 0; i < 8 ; i++){
+            System.out.print(jetonsEnDiagNOSEC[i]);
+        }
+        System.out.println("\njetons en diagSONEL: ");
+        for(int i = 0; i < 8 ; i++){
+            System.out.print(jetonsEnDiagSONEL[i]);
+        }
+        System.out.println("\njetons en diagSONEC: ");
+        for(int i = 0; i < 8 ; i++){
+            System.out.print(jetonsEnDiagSONEC[i]);
+        }
+        System.out.println("\nGrid NOSE: ");
+        printGrid(tabDiagNOSE);
+        System.out.println("\nGrid SONE: ");
+        printGrid(tabDiagSONE);
+    }
+
+    static public void  printGrid(int[][] grid){
+        for (int i = 0; i< 8; i++){
+            for (int j = 0; j < 8; j++){
+                System.out.print(" " + grid[i][j]);
+            }
+            System.out.println();
+        }
+        System.out.println();
+        System.out.println();
+    }
+
+    /*
     public static void testMinimax(){
          // depth 3
          ArrayList<GameInstance> array3 = new ArrayList<GameInstance>();
@@ -93,5 +248,6 @@ public class testApp {
          System.out.println("Best score: " + App.minimax(g3,3,true,-1000,1000) +"\nCalls: "+App.getCalls());
 
     }
+    */
 
 }
