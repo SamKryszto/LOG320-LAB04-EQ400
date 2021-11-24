@@ -217,32 +217,12 @@ public class GameInstance {
         }
 
 
-        // SO - NE - L
-        for (int i = 7; i >=0 ; i--){
-            int temp = 0;
-            int r = 7;
-            for (int j = i ; j>=0; j--){
-                if(grid[r][j]==2||grid[r][j]==4){
-                    temp++;
-                }
-                r--;
-            }
-            jetonsEnDiagSONEL[i]=temp;
-        }
-
-        // fill tab
-        for(int i = 7; i >= 0 ; i--){
-            for (int j = 0; j <= i; j ++){
-                tabDiagSONE[i][j] = jetonsEnDiagSONEL[i-j];
-            }
-        }
-
         // SO - NE - C
-        for (int i = 7; i >=0 ; i--){
+        for (int i = 0; i < 8 ; i++){
             int temp = 0;
-            int r = 7;
-            for (int j = i ; j>=0; j--){
-                if(grid[r][j]==2||grid[r][j]==4){
+            int r = i;
+            for (int j = 0 ; j <= i ; j++){
+                if(grid[j][r]==2||grid[j][r]==4){
                     temp++;
                 }
                 r--;
@@ -251,9 +231,30 @@ public class GameInstance {
         }
 
         // fill tab
-        for(int i = 7; i >= 0 ; i--){
-            for (int j = 0; j <= i; j ++){
-                tabDiagSONE[i][j] = jetonsEnDiagSONEC[i-j];
+        for(int i = 0; i < 8 ; i++){
+            for (int j = 0; j <= i; j++){
+                tabDiagSONE[j][i - j] = jetonsEnDiagSONEC[i];
+            }
+        }
+
+
+        // SO - NE - L
+        for (int i = 0; i < 8 ; i++){
+            int temp = 0;
+            int r = i;
+            for (int j = 7 ; j >= i; j--){
+                if(grid[r][j]==2||grid[r][j]==4){
+                    temp++;
+                }
+                r++;
+            }
+            jetonsEnDiagSONEL[i]=temp;
+        }
+
+        // fill tab
+        for(int i = 0; i < 8 ; i++){
+            for (int j = 0; i + j < 8; j++){
+                tabDiagSONE[i + j][7 - j] = jetonsEnDiagSONEL[i];
             }
         }
         

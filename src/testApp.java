@@ -8,7 +8,7 @@ public class testApp {
         int[][] gridRando = new int[][] { { 0, 0, 2, 0, 2, 2, 0, 0 }, { 4, 0, 0, 0, 0, 0, 0, 4 }, { 0, 0, 0, 4, 0, 2, 0, 4 },
         { 4, 0, 0, 0, 2, 0, 0, 4 }, { 4, 2, 0, 0, 0, 0, 0, 4 }, { 4, 0, 2, 4, 0, 0, 0, 0 },
         { 0, 0, 4, 2, 0, 0, 0, 4 }, { 0, 2, 0, 0, 2, 2, 2, 0 } };
-        testFindJetonsInARow(gridInit);
+        testFindJetonsInARow(gridRando);
         //testFonctionEval(new GameInstance());
         //testMinimax();
         
@@ -76,47 +76,47 @@ public class testApp {
             }
         }
 
-
-        // SO - NE - L
-        for (int i = 7; i >=0 ; i--){
-            int temp = 0;
-            int r = 7;
-            for (int j = i ; j>=0; j--){
-                if(grid[r][j]==2||grid[r][j]==4){
-                    temp++;
-                }
-                r--;
-            }
-            jetonsEnDiagSONEL[i]=temp;
-        }
-
-        // fill tab
-        for(int i = 0; i <8 ; i++){
-            for (int j = i; j >=0; j--){
-                tabDiagSONE[j][i] = jetonsEnDiagSONEL[i-j];
-            }
-        }
-
         // SO - NE - C
-        for (int i = 7; i >=0 ; i--){
+        for (int i = 0; i < 8 ; i++){
             int temp = 0;
-            int r = 7;
-            for (int j = i ; j>=0; j--){
-                if(grid[r][j]==2||grid[r][j]==4){
+            int r = i;
+            for (int j = 0 ; j <= i ; j++){
+                if(grid[j][r]==2||grid[j][r]==4){
                     temp++;
                 }
                 r--;
             }
             jetonsEnDiagSONEC[i]=temp;
         }
-        /*
+        
         // fill tab
-        for(int i = 7; i >=0 ; i--){
-            for (int j = i; j >= 0; j --){
-                tabDiagSONE[j][i] = jetonsEnDiagSONEC[i-j];
+        for(int i = 0; i < 8 ; i++){
+            for (int j = 0; j <= i; j++){
+                tabDiagSONE[j][i - j] = jetonsEnDiagSONEC[i];
             }
         }
-        */
+
+
+        // SO - NE - L
+        for (int i = 0; i < 8 ; i++){
+            int temp = 0;
+            int r = i;
+            for (int j = 7 ; j >= i; j--){
+                if(grid[r][j]==2||grid[r][j]==4){
+                    temp++;
+                }
+                r++;
+            }
+            jetonsEnDiagSONEL[i]=temp;
+        }
+
+        // fill tab
+        for(int i = 0; i < 8 ; i++){
+            for (int j = 0; i + j < 8; j++){
+                tabDiagSONE[i + j][7 - j] = jetonsEnDiagSONEL[i];
+            }
+        } 
+        
         
         // Lines and columns
         for (int r = 0; r < 8; r++){
@@ -145,13 +145,13 @@ public class testApp {
         for(int i = 0; i < 8 ; i++){
             System.out.print(jetonsEnDiagNOSEC[i]);
         }
-        System.out.println("\njetons en diagSONEL: ");
-        for(int i = 0; i < 8 ; i++){
-            System.out.print(jetonsEnDiagSONEL[i]);
-        }
         System.out.println("\njetons en diagSONEC: ");
         for(int i = 0; i < 8 ; i++){
             System.out.print(jetonsEnDiagSONEC[i]);
+        }
+        System.out.println("\njetons en diagSONEL: ");
+        for(int i = 0; i < 8 ; i++){
+            System.out.print(jetonsEnDiagSONEL[i]);
         }
         System.out.println("\nGrid NOSE: ");
         printGrid(tabDiagNOSE);
