@@ -34,6 +34,7 @@ public class GameInstance {
         this.Jblanc = new Joueur(true, new ArrayList<Jeton>());
         this.Jnoir = new Joueur(false, new ArrayList<Jeton>());
         this.lastMove = "ERROR : First move";
+        this.children = new ArrayList<GameInstance>();
         // A revoir: quand generer les enfants?
     }
 
@@ -58,7 +59,8 @@ public class GameInstance {
         this.nbBlancs = nbBlancs;
         this.nbNoirs = nbNoirs;
         this.lastMove = lastMove;
-        rate();
+        this.children = new ArrayList<GameInstance>();
+        //rate();
         // verifie si la partie est terminée et genere les enfants sinon
         if (!gameOver) {
            // A revoir: quand generer les enfants?
@@ -192,7 +194,7 @@ public class GameInstance {
             jetonsEnDiagNOSEL[i]=temp;
         }
         // fill tab
-        for(int i = 0; i < 7 ; i++){
+        for(int i = 0; i < 8 ; i++){
             for (int j = 0; j <= i; j ++){
                 tabDiagNOSE[i][j] = jetonsEnDiagNOSEL[i-j];
             }
@@ -210,12 +212,11 @@ public class GameInstance {
             jetonsEnDiagNOSEC[i]=temp;
         }
         //fill tab
-        for(int i = 0; i < 7 ; i++){
-            for (int j = i; j < 8; j ++){
-                tabDiagNOSE[i][j] = jetonsEnDiagNOSEL[i-j];
+        for(int i = 0; i < 8 ; i++){
+            for (int j = i; j < 8; j++){
+                tabDiagNOSE[i][j] = jetonsEnDiagNOSEC[j-i];
             }
         }
-
 
         // SO - NE - C
         for (int i = 0; i < 8 ; i++){
@@ -229,7 +230,7 @@ public class GameInstance {
             }
             jetonsEnDiagSONEC[i]=temp;
         }
-
+        
         // fill tab
         for(int i = 0; i < 8 ; i++){
             for (int j = 0; j <= i; j++){
@@ -256,7 +257,8 @@ public class GameInstance {
             for (int j = 0; i + j < 8; j++){
                 tabDiagSONE[i + j][7 - j] = jetonsEnDiagSONEL[i];
             }
-        }
+        } 
+        
         
         // Lines and columns
         for (int r = 0; r < 8; r++){
@@ -276,40 +278,43 @@ public class GameInstance {
         for (int r = 0; r < 8; r++){
             for (int c = 0; c < 8; c++){
                 if (grid[r][c] == jetonAllieID){
-                    int[] directionsX;
-                    int[] directionsY;
+                    int[] dirX;
+                    int[] dirY;
                     if (r <= 0) {
-                        directionsX = new int[] { 0, 1 };
+                        dirX = new int[] { 0, 1 };
                     } else if (r < 7) {
-                        directionsX = new int[] { -1, 0, 1 };
+                        dirX = new int[] { -1, 0, 1 };
                     } else {
-                        directionsX = new int[] { -1, 0 };
+                        dirX = new int[] { -1, 0 };
                     }
 
                     if (c <= 0) {
-                        directionsY = new int[] { 0, 1 };
+                        dirY = new int[] { 0, 1 };
                     } else if (c < 7) {
-                        directionsY = new int[] { -1, 0, 1 };
+                        dirY = new int[] { -1, 0, 1 };
                     } else {
-                        directionsY = new int[] { -1, 0 };
+                        dirY = new int[] { -1, 0 };
                     }
 
                     int jetonsSurLaDirection = -2000;
                     // Pour chaque direction possible
-                    for (int i = 0; i < directionsX.length; i++) {
-                        for (int j = 0; j < directionsY.length; j++) {
+                    for (int i = 0; i < dirX.length; i++) {
+                        for (int j = 0; j < dirY.length; j++) {
                             //jetons sur la direction
-                            if ((i==1 || i==-1) && j == 0){
+                            if ((dirX[i]==1 || dirX[i]==-1) && dirY[j] == 0){
                                 jetonsSurLaDirection = jetonsEnLigne[r];
                             }
-                            else if ((j==1 || j==-1) && i == 0){
+                            else if ((dirY[j]==1 || dirY[j]==-1) && dirX[i] == 0){
                                 jetonsSurLaDirection = jetonsEnColonne[c];
                             }
-                            else if ((i==1 && j == 1) || (i==-1 && j==-1)){
+                            else if ((dirX[i]==1 && dirY[j] == 1) || (dirX[i]==-1 && dirY[j]==-1)){
                                 jetonsSurLaDirection = tabDiagSONE[r][c];
                             }
-                            else if ((i==1 && j == -1) || (i==-1 && j==1)){
+                            else if ((dirX[i]==1 && dirY[j] == -1) || (dirX[i]==-1 && dirY[j]==1)){
                                 jetonsSurLaDirection = tabDiagNOSE[r][c];
+                            }
+                            else if ((dirX[i]==0 && dirY[j] == 0)){
+                                break;
                             }
                             else {
                                System.out.println("Something's wrong...");
@@ -320,8 +325,8 @@ public class GameInstance {
                             int newY;
                             int step = 1;
                             do {
-                                newX = r + directionsX[i]* step;
-                                newY = c + directionsY[j]* step;
+                                newX = r + dirX[i]* step;
+                                newY = c + dirY[j]* step;
                                 if (grid[newX][newY] == jetonAdverseID){
                                     cheminLibre = false;
                                 }
@@ -334,11 +339,12 @@ public class GameInstance {
                                 (newY < 8) &&
                                 (newY >= 0)
                             );
+                    
                             // si chemin jusqu'à (pos + jetonsSurLaDirection) est libre (pas de jetons adverses) 
                             // et si l'emplacement d'arrivée ne depasse pas l'échiquier
                             // et si l'emplacement d'arrivée n'est pas un jeton allié
-                            newX+= directionsX[i];
-                            newY+= directionsY[j];
+                            newX+= dirX[i];
+                            newY+= dirY[j];
                             if(
                                 cheminLibre && 
                                 (newX < 8) &&
@@ -408,5 +414,9 @@ public class GameInstance {
 
     private String generateLastMove(int r1, int c1, int r2, int c2){
         return ""+ (char)(65 + c1) + (r1 + 1) + (char)(65 + c2) + (r2 + 1);
+    }
+
+    public String getLastMoveString(){
+        return this.lastMove;
     }
 }

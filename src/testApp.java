@@ -8,7 +8,10 @@ public class testApp {
         int[][] gridRando = new int[][] { { 0, 0, 2, 0, 2, 2, 0, 0 }, { 4, 0, 0, 0, 0, 0, 0, 4 }, { 0, 0, 0, 4, 0, 2, 0, 4 },
         { 4, 0, 0, 0, 2, 0, 0, 4 }, { 4, 2, 0, 0, 0, 0, 0, 4 }, { 4, 0, 2, 4, 0, 0, 0, 0 },
         { 0, 0, 4, 2, 0, 0, 0, 4 }, { 0, 2, 0, 0, 2, 2, 2, 0 } };
-        testFindJetonsInARow(gridRando);
+
+
+        testGenerateChildren();
+        //testFindJetonsInARow(gridRando);
         //testFonctionEval(new GameInstance());
         //testMinimax();
         
@@ -22,6 +25,15 @@ public class testApp {
         gameInstance.setJoueurJeton(grid);
         System.out.println(gameInstance.rate() + " = 2");
 
+    }
+    public static void testGenerateChildren(){
+        GameInstance gridInit = new GameInstance();
+        gridInit.generateChildren();
+        ArrayList<GameInstance> children = gridInit.getChildren();
+        for(int i = 0; i < children.size(); i++){
+            System.out.println(children.get(i).getLastMoveString());
+            printGrid(children.get(i).getGrid());
+        }
     }
 
     public static void testFindJetonsInARow(int[][] grid){
