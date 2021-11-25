@@ -295,12 +295,14 @@ public class GameInstance {
                     } else {
                         dirY = new int[] { -1, 0 };
                     }
-
                     int jetonsSurLaDirection = -2000;
                     String directionChoisie = "aucune";
                     // Pour chaque direction possible
                     for (int i = 0; i < dirX.length; i++) {
                         for (int j = 0; j < dirY.length; j++) {
+                            int dirx = dirX[i];
+                            int diry = dirY[j];
+
                             System.out.println("dirX: " + dirX[i] + " dirY: " + dirY[j]);
                             //jetons sur la direction
                             if(!(dirX[i]==0 && dirY[j] == 0)){
@@ -332,9 +334,9 @@ public class GameInstance {
                                 int newY;
                                 int step = 0;
                                 do {
-                                    newX = r + dirX[i]* step;
-                                    newY = c + dirY[j]* step;
-                                    if (grid[newX][newY] == jetonAdverseID){
+                                    newX = c + dirX[i]* step;
+                                    newY = r + dirY[j]* step;
+                                    if (grid[newY][newX] == jetonAdverseID){
                                         cheminLibre = false;
                                     }
                                     step++;
@@ -358,12 +360,12 @@ public class GameInstance {
                                     (newX >= 0) &&
                                     (newY < 8) &&
                                     (newY >= 0) &&
-                                    grid[newX][newY] != jetonAllieID
+                                    grid[newY][newX] != jetonAllieID
                                 ){
                                     int newNbBlancs = nbBlancs;
                                     int newNbNoirs = nbNoirs;
                                     // si emplacement d'arrivée a un jeton adverse, on l'enlève.
-                                    if (grid[newX][newY]==jetonAdverseID){
+                                    if (grid[newY][newX]==jetonAdverseID){
                                         if(tourDeBlanc){
                                             newNbNoirs--;
                                             Jnoir.retraitJeton(newX,newY);
@@ -375,14 +377,12 @@ public class GameInstance {
                                     }
                                     //creer enfant, determiner parent, ajouter a la liste, attribuer last move
                                     int[][] childGrid = new int [8][8];
-                                    for(int k = 0; i < 8 ; i++){
-                                        for(int z = 0; j < 8; j++){
-                                            childGrid[k][z] = grid[k][z];
-                                        }
+                                    for(int k = 0; k < 8 ; k++){
+                                        childGrid[k] = grid[k].clone();
                                     }
                                     childGrid[r][c] = 0;
-                                    childGrid[newX][newY] = jetonAllieID;
-                                    System.out.print("New GameInstance created");
+                                    childGrid[newY][newX] = jetonAllieID;
+                                    System.out.println("New GameInstance created\n");
                                     GameInstance enfant = new GameInstance(childGrid, !tourDeBlanc, this, newNbBlancs, newNbNoirs, generateLastMove(r, c, newX, newY));
                                     children.add(enfant);
                                     
