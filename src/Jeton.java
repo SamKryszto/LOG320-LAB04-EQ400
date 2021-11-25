@@ -1,3 +1,5 @@
+import java.awt.Point;
+
 public class Jeton {
     private int posX;
     private int posY;
@@ -31,5 +33,9 @@ public class Jeton {
 
     public void setWhite(boolean isWhite) {
         this.isWhite = isWhite;
+    }
+
+    public Point getPosition(){
+        return new Point(posX,posY);
     }
 }

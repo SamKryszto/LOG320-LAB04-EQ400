@@ -1,4 +1,6 @@
 import java.util.ArrayList;
+import java.awt.Point;
+
 
 public class Joueur {
 
@@ -18,8 +20,14 @@ public class Joueur {
         this.isWhite = isWhite;
     }
 
-    public void retraitJeton(Jeton jeton) {
-        this.listeJeton.remove(jeton);
+    public void retraitJeton(int x, int y) {
+        Point pos = new Point(x,y);
+        for(int i = 0; i < listeJeton.size(); i++){
+            if(listeJeton.get(i).getPosition().equals(pos)){
+                this.listeJeton.remove(listeJeton.get(i));
+            }
+        }
+        
     }
 
     public void addJeton(Jeton jeton) {

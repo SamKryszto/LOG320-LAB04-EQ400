@@ -27,9 +27,20 @@ public class testApp {
 
     }
     public static void testGenerateChildren(){
-        GameInstance gridInit = new GameInstance();
-        gridInit.generateChildren();
-        ArrayList<GameInstance> children = gridInit.getChildren();
+        GameInstance gameInit = new GameInstance();
+        int[][] gridTest = new int[][] { 
+        { 0, 0, 4, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0 }, 
+        { 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0 }}; 
+        GameInstance gameTest = new GameInstance(gridTest, true, null, 1, 0, null);
+        gameTest.generateChildren();
+        //printGrid(gameTest.getGrid());
+        ArrayList<GameInstance> children = gameTest.getChildren();
         for(int i = 0; i < children.size(); i++){
             System.out.println(children.get(i).getLastMoveString());
             printGrid(children.get(i).getGrid());

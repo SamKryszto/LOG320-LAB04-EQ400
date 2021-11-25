@@ -297,80 +297,94 @@ public class GameInstance {
                     }
 
                     int jetonsSurLaDirection = -2000;
+                    String directionChoisie = "aucune";
                     // Pour chaque direction possible
                     for (int i = 0; i < dirX.length; i++) {
                         for (int j = 0; j < dirY.length; j++) {
                             //jetons sur la direction
-                            if ((dirX[i]==1 || dirX[i]==-1) && dirY[j] == 0){
-                                jetonsSurLaDirection = jetonsEnLigne[r];
-                            }
-                            else if ((dirY[j]==1 || dirY[j]==-1) && dirX[i] == 0){
-                                jetonsSurLaDirection = jetonsEnColonne[c];
-                            }
-                            else if ((dirX[i]==1 && dirY[j] == 1) || (dirX[i]==-1 && dirY[j]==-1)){
-                                jetonsSurLaDirection = tabDiagSONE[r][c];
-                            }
-                            else if ((dirX[i]==1 && dirY[j] == -1) || (dirX[i]==-1 && dirY[j]==1)){
-                                jetonsSurLaDirection = tabDiagNOSE[r][c];
-                            }
-                            else if ((dirX[i]==0 && dirY[j] == 0)){
-                                break;
-                            }
-                            else {
-                               System.out.println("Something's wrong...");
-                            } 
-                            boolean cheminLibre = true;
-                            // Check si il y a des jetons adverses en chemin;
-                            int newX;
-                            int newY;
-                            int step = 1;
-                            do {
-                                newX = r + dirX[i]* step;
-                                newY = c + dirY[j]* step;
-                                if (grid[newX][newY] == jetonAdverseID){
-                                    cheminLibre = false;
+                            if(!(dirX[i]==0 && dirY[j] == 0)){
+                                if ((dirX[i]==1 || dirX[i]==-1) && dirY[j] == 0){
+                                    jetonsSurLaDirection = jetonsEnLigne[r];
+                                    directionChoisie="Direction : O-E";
                                 }
-                                step++;
-                            }
-                            while (
-                                (step < jetonsSurLaDirection) && 
-                                (newX < 8) &&
-                                (newX >= 0) &&
-                                (newY < 8) &&
-                                (newY >= 0)
-                            );
-                    
-                            // si chemin jusqu'à (pos + jetonsSurLaDirection) est libre (pas de jetons adverses) 
-                            // et si l'emplacement d'arrivée ne depasse pas l'échiquier
-                            // et si l'emplacement d'arrivée n'est pas un jeton allié
-                            newX+= dirX[i];
-                            newY+= dirY[j];
-                            if(
-                                cheminLibre && 
-                                (newX < 8) &&
-                                (newX >= 0) &&
-                                (newY < 8) &&
-                                (newY >= 0) &&
-                                grid[newX][newY] != jetonAllieID
-                            ){
-                                int newNbBlancs = nbBlancs;
-                                int newNbNoirs = nbNoirs;
-                                // si emplacement d'arrivée a un jeton adverse, on l'enlève.
-                                if (grid[newX][newY]==jetonAdverseID){
-                                    if(tourDeBlanc){
-                                        newNbNoirs--;
-                                    }
-                                    else {
-                                        newNbBlancs--;
-                                    }
+                                else if ((dirY[j]==1 || dirY[j]==-1) && dirX[i] == 0){
+                                    jetonsSurLaDirection = jetonsEnColonne[c];
+                                    directionChoisie="Direction : N-S";
                                 }
-                                //creer enfant, determiner parent, ajouter a la liste, attribuer last move
-                                int[][] childGrid = grid;
-                                childGrid[r][c] = 0;
-                                childGrid[newX][newY] = jetonAllieID;
-                                GameInstance enfant = new GameInstance(childGrid, !tourDeBlanc, this, newNbBlancs, newNbNoirs, generateLastMove(r, c, newX, newY));
-                                children.add(enfant);
-                                
+                                else if ((dirX[i]==1 && dirY[j] == 1) || (dirX[i]==-1 && dirY[j]==-1)){
+                                    jetonsSurLaDirection = tabDiagSONE[r][c];
+                                    directionChoisie="Direction : SO-NE";
+                                }
+                                else if ((dirX[i]==1 && dirY[j] == -1) || (dirX[i]==-1 && dirY[j]==1)){
+                                    jetonsSurLaDirection = tabDiagNOSE[r][c];
+                                    directionChoisie="Direction : NO-SE";
+
+                                }
+                                else {
+                                System.out.println("Something's wrong...");
+                                }
+                                System.out.println("Piece: R" + r + " C" + c +" " + directionChoisie + " Jetons en ligne: "+ jetonsEnLigne);
+
+                                boolean cheminLibre = true;
+                                // Check si il y a des jetons adverses en chemin;
+                                int newX;
+                                int newY;
+                                int step = 0;
+                                do {
+                                    newX = r + dirX[i]* step;
+                                    newY = c + dirY[j]* step;
+                                    if (grid[newX][newY] == jetonAdverseID){
+                                        cheminLibre = false;
+                                    }
+                                    step++;
+                                }
+                                while (
+                                    (step < jetonsSurLaDirection) && 
+                                    (newX < 8) &&
+                                    (newX >= 0) &&
+                                    (newY < 8) &&
+                                    (newY >= 0)
+                                );
+                        
+                                // si chemin jusqu'à (pos + jetonsSurLaDirection) est libre (pas de jetons adverses) 
+                                // et si l'emplacement d'arrivée ne depasse pas l'échiquier
+                                // et si l'emplacement d'arrivée n'est pas un jeton allié
+                                newX+= dirX[i];
+                                newY+= dirY[j];
+                                if(
+                                    cheminLibre && 
+                                    (newX < 8) &&
+                                    (newX >= 0) &&
+                                    (newY < 8) &&
+                                    (newY >= 0) &&
+                                    grid[newX][newY] != jetonAllieID
+                                ){
+                                    int newNbBlancs = nbBlancs;
+                                    int newNbNoirs = nbNoirs;
+                                    // si emplacement d'arrivée a un jeton adverse, on l'enlève.
+                                    if (grid[newX][newY]==jetonAdverseID){
+                                        if(tourDeBlanc){
+                                            newNbNoirs--;
+                                            Jnoir.retraitJeton(newX,newY);
+                                        }
+                                        else {
+                                            newNbBlancs--;
+                                            Jblanc.retraitJeton(newX,newY);
+                                        }
+                                    }
+                                    //creer enfant, determiner parent, ajouter a la liste, attribuer last move
+                                    int[][] childGrid = new int [8][8];
+                                    for(int k = 0; i < 8 ; i++){
+                                        for(int z = 0; j < 8; j++){
+                                            childGrid[k][z] = grid[k][z];
+                                        }
+                                    }
+                                    childGrid[r][c] = 0;
+                                    childGrid[newX][newY] = jetonAllieID;
+                                    GameInstance enfant = new GameInstance(childGrid, !tourDeBlanc, this, newNbBlancs, newNbNoirs, generateLastMove(r, c, newX, newY));
+                                    children.add(enfant);
+                                    
+                                }
                             }
                             
                         }
