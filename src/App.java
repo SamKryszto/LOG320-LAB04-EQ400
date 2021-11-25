@@ -57,7 +57,7 @@ public class App {
 
 					System.out.println("Nouvelle partie! Vous jouez blanc, entrez votre premier coup : ");
 					String move = null;
-					move = currentGameState.getNextMove();
+					move = getBestMoveWithTimeAllowed(currentGameState);
 					output.write(move.getBytes(),0,move.length());
 					output.flush();
 				}
@@ -100,7 +100,7 @@ public class App {
 					System.out.println("Dernier coup :"+ s);
 					System.out.println("Entrez votre coup : ");
 					String move = null;
-					//move = getBestMoveWithTimeAllowed(currentGameState);
+					move = getBestMoveWithTimeAllowed(currentGameState);
 					output.write(move.getBytes(),0,move.length());
 					output.flush();
 				}
@@ -108,7 +108,7 @@ public class App {
 				if(cmd == '4'){
 					System.out.println("Coup invalide, entrez un nouveau coup : ");
 					String move = null;
-					move = currentGameState.getNextMove();
+					move = getBestMoveWithTimeAllowed(currentGameState);
 					output.write(move.getBytes(),0,move.length());
 					output.flush();
 					
@@ -131,7 +131,7 @@ public class App {
 			e.printStackTrace();
 		}
     }
-	public static GameInstance getBestMoveWithTimeAllowed(GameInstance gameInstance){
+	public static String getBestMoveWithTimeAllowed(GameInstance gameInstance){
 		startTime = System.nanoTime();
 		int score = minimax(gameInstance, false, true, -100000000,100000000);
 		return gameInstance.getNextMove(score);

@@ -37,7 +37,7 @@ public class testApp {
         { 0, 0, 0, 0, 0, 0, 0, 0 },
         { 0, 0, 0, 0, 0, 0, 0, 0 },
         { 0, 0, 0, 0, 0, 0, 0, 0 }}; 
-        GameInstance gameTest = new GameInstance(gridTest, true, null, 1, 0, null);
+        GameInstance gameTest = new GameInstance(gridTest, true, 1, 0, null);
         gameTest.generateChildren();
         //printGrid(gameTest.getGrid());
         ArrayList<GameInstance> children = gameTest.getChildren();

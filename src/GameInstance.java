@@ -6,21 +6,13 @@ public class GameInstance {
     private static ArrayList<GameInstance> children;
     private boolean tourDeBlanc; //true = blanc , false = noir
     private boolean gameOver;
-    private int depth;
-    private GameInstance parent;
     private int[][] grid;
     private int nbNoirs;
     private int nbBlancs;
     private String lastMove;
     private Joueur Jblanc;
     private Joueur Jnoir;
-
-    // temp
-    private char column = 'A';
-    private int row = 1;
-
-    //temp
-   private int score;
+    private int score;
 
     // Échiquier initial
     public GameInstance() {
@@ -52,10 +44,9 @@ public class GameInstance {
         this.grid = grid;
     }
 
-    public GameInstance(int[][] grid, boolean tourDeBlanc, GameInstance parent, int nbBlancs, int nbNoirs, String lastMove) {
+    public GameInstance(int[][] grid, boolean tourDeBlanc,int nbBlancs, int nbNoirs, String lastMove) {
         this.grid = grid;
         this.tourDeBlanc = tourDeBlanc;
-        this.parent = parent;
         this.nbBlancs = nbBlancs;
         this.nbNoirs = nbNoirs;
         this.lastMove = lastMove;
@@ -383,7 +374,7 @@ public class GameInstance {
                                     childGrid[r][c] = 0;
                                     childGrid[newY][newX] = jetonAllieID;
                                     System.out.println("New GameInstance created\n");
-                                    GameInstance enfant = new GameInstance(childGrid, !tourDeBlanc, this, newNbBlancs, newNbNoirs, generateLastMove(r, c, newX, newY));
+                                    GameInstance enfant = new GameInstance(childGrid, !tourDeBlanc, newNbBlancs, newNbNoirs, generateLastMove(r, c, newX, newY));
                                     children.add(enfant);
                                     
                                 }
@@ -418,7 +409,7 @@ public class GameInstance {
         return this.lastMove;
     }
 
-    public static String getNextMove(int score){
+    public String getNextMove(int score){
         GameInstance child = null;
         for(int i = 0; i<children.size(); i++){
             if(children.get(i).getScore()==score){
