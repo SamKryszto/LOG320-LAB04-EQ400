@@ -280,17 +280,17 @@ public class GameInstance {
                 if (grid[r][c] == jetonAllieID){
                     int[] dirX;
                     int[] dirY;
-                    if (r <= 0) {
+                    if (c <= 0) {
                         dirX = new int[] { 0, 1 };
-                    } else if (r < 7) {
+                    } else if (c < 7) {
                         dirX = new int[] { -1, 0, 1 };
                     } else {
                         dirX = new int[] { -1, 0 };
                     }
 
-                    if (c <= 0) {
+                    if (r <= 0) {
                         dirY = new int[] { 0, 1 };
-                    } else if (c < 7) {
+                    } else if (r < 7) {
                         dirY = new int[] { -1, 0, 1 };
                     } else {
                         dirY = new int[] { -1, 0 };
@@ -301,6 +301,7 @@ public class GameInstance {
                     // Pour chaque direction possible
                     for (int i = 0; i < dirX.length; i++) {
                         for (int j = 0; j < dirY.length; j++) {
+                            System.out.println("dirX: " + dirX[i] + " dirY: " + dirY[j]);
                             //jetons sur la direction
                             if(!(dirX[i]==0 && dirY[j] == 0)){
                                 if ((dirX[i]==1 || dirX[i]==-1) && dirY[j] == 0){
@@ -323,7 +324,7 @@ public class GameInstance {
                                 else {
                                 System.out.println("Something's wrong...");
                                 }
-                                System.out.println("Piece: R" + r + " C" + c +" " + directionChoisie + " Jetons en ligne: "+ jetonsEnLigne);
+                                System.out.println("Piece: R" + r + " C" + c +" " + directionChoisie + " Jetons en ligne: "+ jetonsSurLaDirection);
 
                                 boolean cheminLibre = true;
                                 // Check si il y a des jetons adverses en chemin;
@@ -381,6 +382,7 @@ public class GameInstance {
                                     }
                                     childGrid[r][c] = 0;
                                     childGrid[newX][newY] = jetonAllieID;
+                                    System.out.print("New GameInstance created");
                                     GameInstance enfant = new GameInstance(childGrid, !tourDeBlanc, this, newNbBlancs, newNbNoirs, generateLastMove(r, c, newX, newY));
                                     children.add(enfant);
                                     

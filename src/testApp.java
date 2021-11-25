@@ -29,10 +29,10 @@ public class testApp {
     public static void testGenerateChildren(){
         GameInstance gameInit = new GameInstance();
         int[][] gridTest = new int[][] { 
-        { 0, 0, 4, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 0, 0, 0, 0, 0 },
         { 0, 0, 0, 0, 0, 0, 0, 0 }, 
         { 0, 0, 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 0, 0, 0, 0 },
+        { 0, 0, 0, 4, 0, 0, 0, 0 },
         { 0, 0, 0, 0, 0, 0, 0, 0 },
         { 0, 0, 0, 0, 0, 0, 0, 0 },
         { 0, 0, 0, 0, 0, 0, 0, 0 },
