@@ -3,7 +3,7 @@ import java.util.ArrayList;
 public class GameInstance {
 
     // liste des possibilités d'échiquier à partir des positions actuelles
-    private ArrayList<GameInstance> children;
+    private static ArrayList<GameInstance> children;
     private boolean tourDeBlanc; //true = blanc , false = noir
     private boolean gameOver;
     private int depth;
@@ -93,7 +93,7 @@ public class GameInstance {
     // le joueur a gagné
     // Idée: +1 pour chaque jeton collé de maxPlayer et -1 pour chaque jeton collé
     // de l'autre #
-    public int rate() {
+    public void rate() {
         this.gameOver = false;
         int rate = 0;
         ArrayList<Jeton> listeJetonNoir = Jnoir.getListeJeton();
@@ -115,7 +115,7 @@ public class GameInstance {
         }
 
         rate = maxNoir - maxBlanc;
-        return rate;
+        this.score = rate;
     }
 
     public void calculVictoire(int joueur, int row, int col) {
@@ -400,33 +400,15 @@ public class GameInstance {
         return this.grid;
     }
 
-    //temp
     public int getScore() {
         return score;
     }
-    
-    /**
-     * Cette méthode renvoie un String représentant le prochain mouvement de l'algorithme de jeu. 
-     * 
-     * Le mouvement à jouer doit être de format : "C1" + "R1" + "C2" + "R2" où C1 et R1 sont respectivement 
-     * la lettre de colonne et le numéro de rangée initiales du pion à bouger et C2 et R2 sont respectivement 
-     * la lettre de colonne et le numéro de rangée du pion après le mouvement.
-     */
-    public String getNextMove() {
 
-        // À des fins de test, l'algorithme envoie pour l'instant une série de commandes peu stratégiques
-        String nextMove = String.valueOf(column) + row + String.valueOf(column) + (row + 2);
-        if (column != 'H') {
-            column++;
-        }
-        else {
-            column = 'A';
-            row++;
-        }
-        
-
-        return nextMove;
+    public void setScore(int score){
+        this.score = score;
     }
+    
+   
 
     private String generateLastMove(int r1, int c1, int r2, int c2){
         return ""+ (char)(65 + c1) + (r1 + 1) + (char)(65 + c2) + (r2 + 1);
@@ -434,5 +416,15 @@ public class GameInstance {
 
     public String getLastMoveString(){
         return this.lastMove;
+    }
+
+    public static String getNextMove(int score){
+        GameInstance child = null;
+        for(int i = 0; i<children.size(); i++){
+            if(children.get(i).getScore()==score){
+                child = children.get(i);
+            }
+        }
+        return child.getLastMoveString();
     }
 }

@@ -3,11 +3,10 @@ import java.net.*;
 
 public class App {
 
+	static private long startTime;
+	static private long timeAllowed = 4;
+
 	
-
-    private static int minimaxCalls;
-
-
 	/**
 	 * order of operations : 
 	 * - ouvrir BoardGame.exe
@@ -101,7 +100,7 @@ public class App {
 					System.out.println("Dernier coup :"+ s);
 					System.out.println("Entrez votre coup : ");
 					String move = null;
-					move = currentGameState.getNextMove();
+					//move = getBestMoveWithTimeAllowed(currentGameState);
 					output.write(move.getBytes(),0,move.length());
 					output.flush();
 				}
@@ -132,20 +131,27 @@ public class App {
 			e.printStackTrace();
 		}
     }
+	public static GameInstance getBestMoveWithTimeAllowed(GameInstance gameInstance){
+		startTime = System.nanoTime();
+		int score = minimax(gameInstance, false, true, -100000000,100000000);
+		return gameInstance.getNextMove(score);
+	}
 
     // Minimax + alpha-beta pruning
-    public static int minimax(GameInstance gameInstance, int depth, boolean isMaxPlayer, int alpha, int beta) {
-        minimaxCalls++;
-        if (depth == 0 || gameInstance.gameIsOver()) {
-            //return gameInstance.rate();
-            return gameInstance.getScore();
+    public static int minimax(GameInstance gameInstance, boolean timesUP, boolean isMaxPlayer, int alpha, int beta) {
+		if((System.nanoTime() - startTime)>= timeAllowed){
+			timesUP = true;
+		}
+        if (timesUP || gameInstance.gameIsOver()) {
+            gameInstance.rate();
         }
         if (isMaxPlayer) {
             int maxRating = -1000000000;
             for (int i = 0; i < gameInstance.getChildren().size(); i++) {
                 GameInstance child = gameInstance.getChildren().get(i);
-                int rating = minimax(child, depth - 1, false, alpha, beta);
+                int rating = minimax(child, timesUP, false, alpha, beta);
                 maxRating = Math.max(maxRating, rating);
+				gameInstance.setScore(maxRating);
                 alpha = Math.max(rating, alpha);
                 if (beta <= alpha) {
                     System.out.println("PRUNED!");
@@ -157,8 +163,9 @@ public class App {
             int minRating = 1000000000;
             for (int i = 0; i < gameInstance.getChildren().size(); i++) {
                 GameInstance child = gameInstance.getChildren().get(i);
-                int rating = minimax(child, depth - 1, true, alpha, beta);
+                int rating = minimax(child, timesUP, true, alpha, beta);
                 minRating = Math.min(minRating, rating);
+				gameInstance.setScore(minRating);
                 beta = Math.min(rating, beta);
                 if (beta <= alpha) {
                     System.out.println("PRUNED!");
@@ -167,9 +174,5 @@ public class App {
             }
             return minRating;
         }
-    }
-    //temp
-    public static int getCalls(){
-        return minimaxCalls;
     }
 }
