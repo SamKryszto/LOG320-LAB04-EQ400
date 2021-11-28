@@ -2,7 +2,15 @@ import java.util.ArrayList;
 
 public class GameInstance {
 
-    public static final int BIT_BOARD_LENGTH = 64;
+    public static final int LONG_LENGTH = 64;
+    public static final int BIT_BOARD_LENGTH = 63;
+    public static final int S_N_SHIFT = 8;
+    public static final int O_E_SHIFT = 1;
+    public static final int SE_NO_SHIFT = 9;
+    public static final int SO_NE_SHIFT = 7;
+
+
+
 
     // liste des possibilités d'échiquier à partir des positions actuelles
     private ArrayList<GameInstance> children;
@@ -16,7 +24,7 @@ public class GameInstance {
     private String lastMove;
     private Joueur Jblanc;
     private Joueur Jnoir;
-    private long bitBoardRouges;
+    private long bitBoardBlancs;
     private long bitBoardNoirs;
 
 
@@ -72,8 +80,8 @@ public class GameInstance {
         }
     }
 
-    public GameInstance(long bitBoardRouges, long bitBoardNoirs, boolean tourDeBlanc, GameInstance parent, int nbBlancs, int nbNoirs, String lastMove) {
-        this.bitBoardRouges = bitBoardRouges;
+    public GameInstance(long bitBoardBlancs, long bitBoardNoirs, boolean tourDeBlanc, GameInstance parent, int nbBlancs, int nbNoirs, String lastMove) {
+        this.bitBoardBlancs = bitBoardBlancs;
         this.bitBoardNoirs = bitBoardNoirs;
         this.tourDeBlanc = tourDeBlanc;
         this.parent = parent;
@@ -175,202 +183,543 @@ public class GameInstance {
         long bitBoardAdverse;
         long jetonsAlliesDansLigne;
         long jetonsAdversesDansLigne;
-        long jetonsTotauxDansLigne;
         int nombreJetonsDansLigne;
         int deplacementDansLigne;
         int caseDestination;
+        long[] newBitBoards; 
+        int newNbJetonsBlancs = nbBlancs;
+        int newNbJetonsNoirs = nbNoirs;
+        int limiteLigne;
+        int premiereCaseDansLigne;
         
         // A qui est le tour - On attribue les jetons au joueur en cours
         if(this.tourDeBlanc){
-            bitBoardAllie = bitBoardRouges;
+            bitBoardAllie = bitBoardBlancs;
             bitBoardAdverse = bitBoardNoirs;
         }
         else {
             bitBoardAllie = bitBoardNoirs;
-            bitBoardAdverse = bitBoardRouges;
+            bitBoardAdverse = bitBoardBlancs;
         }
 
         // pour chaque ligne d'action du jeu
-        int premiereCaseDansLigne = 0;
-        // on récupère un bitBoard représentant les jetons alliés dans la ligne
-        //jetonsAlliesDansLigne = Masks.getPiecesNToS(premiereCaseDansLigne, bitBoardAllie);
-        jetonsAlliesDansLigne = bitBoardAllie & Masks.getMask(premiereCaseDansLigne, Masks.N_S);
-        // s'il y a des jetons alliés dans la ligne
-        if (jetonsAlliesDansLigne != 0) {
-            // On récupère un bitboard représentant les jetons adverses dans la ligne
-            //jetonsAdversesDansLigne = Masks.getPiecesNToS(premiereCaseDansLigne, bitBoardAdverse);
-            jetonsAdversesDansLigne = Masks.getMask(premiereCaseDansLigne, Masks.N_S);
-            // on compte le nombre de jetons dans la ligne
-            nombreJetonsDansLigne = countJetonsDansLigne(jetonsAlliesDansLigne | jetonsAdversesDansLigne);
-            deplacementDansLigne = nombreJetonsDansLigne;
-            // pour chaque case dans la ligne
-            for(int i = premiereCaseDansLigne; i < 63; i += 8) {
-                // s'il y a un jeton allié dans la case
-                if (((jetonsAlliesDansLigne >>> i) & 0b1) != 0) {
-                    caseDestination = i - deplacementDansLigne;
-                    // si la case n'est pas trop près du bord
-                    if ((i >= deplacementDansLigne) && 
-                    // si la case d'arrivée n'est pas occupée par un jeton allié
-                    (((jetonsAlliesDansLigne >>> (caseDestination - 1)) & 0b1) == 0) &&
-                    // si les cases intermédiaires ne sont pas occupées par un jeton adverse
-                    (((((0b1 >> (deplacementDansLigne - 2)) << (caseDestination)) & jetonsAdversesDansLigne) == 0))) {
-                        // on ajoute un GameInstance enfant dans le GameInstance actuel
-                        movePiece(i, i - deplacementDansLigne, bitBoardAllie);
-                        GameInstance enfant = new GameInstance(childGrid, !tourDeBlanc, this, newNbBlancs, newNbNoirs, generateLastMove(r, c, newX, newY));
-                                    children.add(enfant);
-                    }
-                }
-                deplacementDansLigne += 8;
-            }
-            if (jetonsAdversesDansLigne != 0){
 
-            }
-            jetonsTotauxDansLigne = (bitBoardAllie | bitBoardAdverse) & Masks.getMask(premiereCaseDansLigne, Masks.N_S);
+// /**************************************************************************************************************
+//  *                                                  SUD_NORD
+//  **************************************************************************************************************/ 
+//         for (premiereCaseDansLigne = 0; premiereCaseDansLigne < 8; premiereCaseDansLigne ++){
             
+           
+//             // on récupère un bitBoard représentant les jetons alliés dans la ligne
+//             //jetonsAlliesDansLigne = Masks.getPiecesNToS(premiereCaseDansLigne, bitBoardAllie);
+//             jetonsAlliesDansLigne = bitBoardAllie & Masks.getMask(premiereCaseDansLigne, Masks.S_N);
+//             System.out.println(Long.toBinaryString(jetonsAlliesDansLigne));
+//             // s'il y a des jetons alliés dans la ligne
+//             if (jetonsAlliesDansLigne != 0) {
+//                 // On récupère un bitboard représentant les jetons adverses dans la ligne
+//                 //jetonsAdversesDansLigne = Masks.getPiecesNToS(premiereCaseDansLigne, bitBoardAdverse);
+//                 jetonsAdversesDansLigne = bitBoardAdverse & Masks.getMask(premiereCaseDansLigne, Masks.S_N);
+//                 // on compte le nombre de jetons dans la ligne
+//                 nombreJetonsDansLigne = countJetonsDansLigne(jetonsAlliesDansLigne | jetonsAdversesDansLigne);
+//                 deplacementDansLigne = nombreJetonsDansLigne * 8;
+//                 // pour chaque case dans la ligne
+//                 for(int caseJeton = premiereCaseDansLigne; caseJeton < 63; caseJeton += 8) {
+//                     // s'il y a un jeton allié dans la case
+//                     if (((jetonsAlliesDansLigne >>> caseJeton) & 0b1) != 0) {
+//                         caseDestination = caseJeton - deplacementDansLigne;
+//                         // si la case n'est pas trop près du bord
+//                         if ((caseJeton >= deplacementDansLigne) && 
+//                         // si la case d'arrivée n'est pas occupée par un jeton allié
+//                         (((jetonsAlliesDansLigne >>> (caseDestination)) & 0b1) == 0) &&
+//                         // si les cases intermédiaires ne sont pas occupées par un jeton adverse
+//                         ((((-1L >>> (64 - (deplacementDansLigne - 1))) << (caseDestination + 1)) & jetonsAdversesDansLigne) == 0)) {
+//                             // on ajoute un GameInstance enfant dans le GameInstance actuel
+//                             newBitBoards = Masks.movePiece(caseJeton, caseDestination, bitBoardAllie,bitBoardAdverse);
+//                             if ((newBitBoards[1] & bitBoardAdverse) != bitBoardAdverse ) {
+//                                 if (this.tourDeBlanc) {
+//                                     GameInstance enfant = new GameInstance(newBitBoards[0], newBitBoards[1], !tourDeBlanc, 
+//                                                             this, nbBlancs, (nbNoirs - 1), 
+//                                                             Masks.getMovementCode(caseJeton, caseDestination));
+//                                     children.add(enfant);
+//                                 }
+//                                 else {
+//                                     GameInstance enfant = new GameInstance(newBitBoards[0], newBitBoards[1], !tourDeBlanc, 
+//                                                             this, (nbBlancs - 1), nbNoirs, 
+//                                                             Masks.getMovementCode(caseJeton, caseDestination));
+//                                     children.add(enfant);
+//                                 }
+//                             }
+//                             else {
+//                                 GameInstance enfant = new GameInstance(newBitBoards[0], newBitBoards[1], !tourDeBlanc, 
+//                                                         this, nbBlancs, nbNoirs, 
+//                                                         Masks.getMovementCode(caseJeton, caseDestination));
+//                                 children.add(enfant);
+//                             }
+//                         }
+                        
+//                         // dans l'autre direction
+//                         caseDestination = caseJeton + deplacementDansLigne;
+//                         // si la case n'est pas trop près du bord
+//                         if ((63 >= caseDestination) && 
+//                         // si la case d'arrivée n'est pas occupée par un jeton allié
+//                         (((jetonsAlliesDansLigne >>> (caseDestination)) & 0b1) == 0) &&
+//                         // si les cases intermédiaires ne sont pas occupées par un jeton adverse
+//                         ((((-1L >>> (64 - (deplacementDansLigne - 1))) << caseJeton) & jetonsAdversesDansLigne) == 0)) {
+//                             // on ajoute un GameInstance enfant dans le GameInstance actuel
+//                             newBitBoards = Masks.movePiece(caseJeton, caseDestination, bitBoardAllie,bitBoardAdverse);
+//                             if ((newBitBoards[1] & bitBoardAdverse) != bitBoardAdverse ) {
+//                                 if (this.tourDeBlanc) {
+//                                     GameInstance enfant = new GameInstance(newBitBoards[0], newBitBoards[1], !tourDeBlanc, 
+//                                                             this, nbBlancs, (nbNoirs - 1), 
+//                                                             Masks.getMovementCode(caseJeton, caseDestination));
+//                                     children.add(enfant);
+//                                 }
+//                                 else {
+//                                     GameInstance enfant = new GameInstance(newBitBoards[0], newBitBoards[1], !tourDeBlanc, 
+//                                                             this, (nbBlancs - 1), nbNoirs, 
+//                                                             Masks.getMovementCode(caseJeton, caseDestination));
+//                                     children.add(enfant);
+//                                 }
+//                             }
+//                             else {
+//                                 GameInstance enfant = new GameInstance(newBitBoards[0], newBitBoards[1], !tourDeBlanc, 
+//                                                         this, nbBlancs, nbNoirs, 
+//                                                         Masks.getMovementCode(caseJeton, caseDestination));
+//                                 children.add(enfant);
+//                             }
+//                         }
+//                     }
+//                 }
+//             }
+//         }
 
 
-        }
+// /**************************************************************************************************************
+//  *                                                  EST_OUEST
+//  **************************************************************************************************************/ 
+//         for (premiereCaseDansLigne = 0; premiereCaseDansLigne < 63; premiereCaseDansLigne += 8) {
+//             // on récupère un bitBoard représentant les jetons alliés dans la ligne
+//             jetonsAlliesDansLigne = bitBoardAllie & Masks.getMask(premiereCaseDansLigne, Masks.E_O);
+//             System.out.println(Long.toBinaryString(jetonsAlliesDansLigne));
+//             // s'il y a des jetons alliés dans la ligne
+//             if (jetonsAlliesDansLigne != 0) {
+//                 // On récupère un bitboard représentant les jetons adverses dans la ligne
+//                 //jetonsAdversesDansLigne = Masks.getPiecesNToS(premiereCaseDansLigne, bitBoardAdverse);
+//                 jetonsAdversesDansLigne = bitBoardAdverse & Masks.getMask(premiereCaseDansLigne, Masks.E_O);
+//                 // on compte le nombre de jetons dans la ligne
+//                 nombreJetonsDansLigne = countJetonsDansLigne(jetonsAlliesDansLigne | jetonsAdversesDansLigne);
+//                 deplacementDansLigne = nombreJetonsDansLigne;
+//                 // pour chaque case dans la ligne
+//                 limiteLigne = premiereCaseDansLigne + 7;
+//                 for(int caseJeton = premiereCaseDansLigne; caseJeton <= limiteLigne; caseJeton ++) {
+//                     // s'il y a un jeton allié dans la case
+//                     if (((jetonsAlliesDansLigne >>> caseJeton) & 0b1) != 0) {
+//                         caseDestination = caseJeton - deplacementDansLigne;
+//                         // si la case n'est pas trop près du bord
+//                         if ((caseDestination >= premiereCaseDansLigne) && 
+//                         // si la case d'arrivée n'est pas occupée par un jeton allié
+//                         (((jetonsAlliesDansLigne >>> (caseDestination)) & 0b1) == 0) &&
+//                         // si les cases intermédiaires ne sont pas occupées par un jeton adverse
+//                         ((((-1L >>> (64 - (deplacementDansLigne - 1))) << (caseDestination + 1)) & jetonsAdversesDansLigne) == 0)) {
+//                             // on ajoute un GameInstance enfant dans le GameInstance actuel
+//                             newBitBoards = Masks.movePiece(caseJeton, caseDestination, bitBoardAllie,bitBoardAdverse);
+//                             if ((newBitBoards[1] & bitBoardAdverse) != bitBoardAdverse ) {
+//                                 if (this.tourDeBlanc) {
+//                                     GameInstance enfant = new GameInstance(newBitBoards[0], newBitBoards[1], !tourDeBlanc, 
+//                                                             this, nbBlancs, (nbNoirs - 1), 
+//                                                             Masks.getMovementCode(caseJeton, caseDestination));
+//                                     children.add(enfant);
+//                                 }
+//                                 else {
+//                                     GameInstance enfant = new GameInstance(newBitBoards[0], newBitBoards[1], !tourDeBlanc, 
+//                                                             this, (nbBlancs - 1), nbNoirs, 
+//                                                             Masks.getMovementCode(caseJeton, caseDestination));
+//                                     children.add(enfant);
+//                                 }
+//                             }
+//                             else {
+//                                 GameInstance enfant = new GameInstance(newBitBoards[0], newBitBoards[1], !tourDeBlanc, 
+//                                                         this, nbBlancs, nbNoirs, 
+//                                                         Masks.getMovementCode(caseJeton, caseDestination));
+//                                 children.add(enfant);
+//                             }
+//                         }
+                        
+//                         // dans l'autre direction
+//                         caseDestination = caseJeton + deplacementDansLigne;
+//                         // si la case n'est pas trop près du bord
+//                         if ((limiteLigne >= caseDestination) && 
+//                         // si la case d'arrivée n'est pas occupée par un jeton allié
+//                         (((jetonsAlliesDansLigne >>> (caseDestination)) & 0b1) == 0) &&
+//                         // si les cases intermédiaires ne sont pas occupées par un jeton adverse
+//                         ((((-1L >>> (64 - deplacementDansLigne)) << caseJeton) & jetonsAdversesDansLigne) == 0)) {
+//                             // on ajoute un GameInstance enfant dans le GameInstance actuel
+//                             newBitBoards = Masks.movePiece(caseJeton, caseDestination, bitBoardAllie,bitBoardAdverse);
+//                             if ((newBitBoards[1] & bitBoardAdverse) != bitBoardAdverse ) {
+//                                 if (this.tourDeBlanc) {
+//                                     GameInstance enfant = new GameInstance(newBitBoards[0], newBitBoards[1], !tourDeBlanc, 
+//                                                             this, nbBlancs, (nbNoirs - 1), 
+//                                                             Masks.getMovementCode(caseJeton, caseDestination));
+//                                     children.add(enfant);
+//                                 }
+//                                 else {
+//                                     GameInstance enfant = new GameInstance(newBitBoards[0], newBitBoards[1], !tourDeBlanc, 
+//                                                             this, (nbBlancs - 1), nbNoirs, 
+//                                                             Masks.getMovementCode(caseJeton, caseDestination));
+//                                     children.add(enfant);
+//                                 }
+//                             }
+//                             else {
+//                                 GameInstance enfant = new GameInstance(newBitBoards[0], newBitBoards[1], !tourDeBlanc, 
+//                                                         this, nbBlancs, nbNoirs, 
+//                                                         Masks.getMovementCode(caseJeton, caseDestination));
+//                                 children.add(enfant);
+//                             }
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+// /**************************************************************************************************************
+//  *                                                  SUD-EST_NORD-OUEST
+//  **************************************************************************************************************/ 
+//         for (premiereCaseDansLigne = 0; premiereCaseDansLigne < 7; premiereCaseDansLigne++) {
+//             // on récupère un bitBoard représentant les jetons alliés dans la ligne
+//             jetonsAlliesDansLigne = bitBoardAllie & Masks.getMask(premiereCaseDansLigne, Masks.SE_NO);
+//             System.out.println(Long.toBinaryString(jetonsAlliesDansLigne));
+//             // s'il y a des jetons alliés dans la ligne
+//             if (jetonsAlliesDansLigne != 0) {
+//                 // On récupère un bitboard représentant les jetons adverses dans la ligne
+//                 //jetonsAdversesDansLigne = Masks.getPiecesNToS(premiereCaseDansLigne, bitBoardAdverse);
+//                 jetonsAdversesDansLigne = bitBoardAdverse & Masks.getMask(premiereCaseDansLigne, Masks.SE_NO);
+//                 // on compte le nombre de jetons dans la ligne
+//                 nombreJetonsDansLigne = countJetonsDansLigne(jetonsAlliesDansLigne | jetonsAdversesDansLigne);
+//                 deplacementDansLigne = nombreJetonsDansLigne * 9;
+//                 // pour chaque case dans la ligne
+//                 limiteLigne = 63 - 8 * premiereCaseDansLigne;
+//                 for(int caseJeton = premiereCaseDansLigne; caseJeton <= limiteLigne; caseJeton += 9) {
+//                     // s'il y a un jeton allié dans la case
+//                     if (((jetonsAlliesDansLigne >>> caseJeton) & 0b1) != 0) {
+//                         caseDestination = caseJeton - deplacementDansLigne;
+//                         // si la case n'est pas trop près du bord
+//                         if ((caseDestination >= premiereCaseDansLigne) && 
+//                         // si la case d'arrivée n'est pas occupée par un jeton allié
+//                         (((jetonsAlliesDansLigne >>> (caseDestination)) & 0b1) == 0) &&
+//                         // si les cases intermédiaires ne sont pas occupées par un jeton adverse
+//                         ((((-1L >>> (64 - (deplacementDansLigne - 1))) << (caseDestination + 1)) & jetonsAdversesDansLigne) == 0)) {
+//                             // on ajoute un GameInstance enfant dans le GameInstance actuel
+//                             newBitBoards = Masks.movePiece(caseJeton, caseDestination, bitBoardAllie,bitBoardAdverse);
+//                             if ((newBitBoards[1] & bitBoardAdverse) != bitBoardAdverse ) {
+//                                 if (this.tourDeBlanc) {
+//                                     GameInstance enfant = new GameInstance(newBitBoards[0], newBitBoards[1], !tourDeBlanc, 
+//                                                             this, nbBlancs, (nbNoirs - 1), 
+//                                                             Masks.getMovementCode(caseJeton, caseDestination));
+//                                     children.add(enfant);
+//                                 }
+//                                 else {
+//                                     GameInstance enfant = new GameInstance(newBitBoards[0], newBitBoards[1], !tourDeBlanc, 
+//                                                             this, (nbBlancs - 1), nbNoirs, 
+//                                                             Masks.getMovementCode(caseJeton, caseDestination));
+//                                     children.add(enfant);
+//                                 }
+//                             }
+//                             else {
+//                                 GameInstance enfant = new GameInstance(newBitBoards[0], newBitBoards[1], !tourDeBlanc, 
+//                                                         this, nbBlancs, nbNoirs, 
+//                                                         Masks.getMovementCode(caseJeton, caseDestination));
+//                                 children.add(enfant);
+//                             }
+//                         }
+                        
+//                         // dans l'autre direction
+//                         caseDestination = caseJeton + deplacementDansLigne;
+//                         // si la case n'est pas trop près du bord
+//                         if ((limiteLigne >= caseDestination) && 
+//                         // si la case d'arrivée n'est pas occupée par un jeton allié
+//                         (((jetonsAlliesDansLigne >>> (caseDestination)) & 0b1) == 0) &&
+//                         // si les cases intermédiaires ne sont pas occupées par un jeton adverse
+//                         ((((-1L >>> (64 - deplacementDansLigne)) << caseJeton) & jetonsAdversesDansLigne) == 0)) {
+//                             // on ajoute un GameInstance enfant dans le GameInstance actuel
+//                             newBitBoards = Masks.movePiece(caseJeton, caseDestination, bitBoardAllie,bitBoardAdverse);
+//                             if ((newBitBoards[1] & bitBoardAdverse) != bitBoardAdverse ) {
+//                                 if (this.tourDeBlanc) {
+//                                     GameInstance enfant = new GameInstance(newBitBoards[0], newBitBoards[1], !tourDeBlanc, 
+//                                                             this, nbBlancs, (nbNoirs - 1), 
+//                                                             Masks.getMovementCode(caseJeton, caseDestination));
+//                                     children.add(enfant);
+//                                 }
+//                                 else {
+//                                     GameInstance enfant = new GameInstance(newBitBoards[0], newBitBoards[1], !tourDeBlanc, 
+//                                                             this, (nbBlancs - 1), nbNoirs, 
+//                                                             Masks.getMovementCode(caseJeton, caseDestination));
+//                                     children.add(enfant);
+//                                 }
+//                             }
+//                             else {
+//                                 GameInstance enfant = new GameInstance(newBitBoards[0], newBitBoards[1], !tourDeBlanc, 
+//                                                         this, nbBlancs, nbNoirs, 
+//                                                         Masks.getMovementCode(caseJeton, caseDestination));
+//                                 children.add(enfant);
+//                             }
+//                         }
+//                     }
+//                 }
+//             }
+//         }
 
-        for (int i = 0; i < BIT_BOARD_LENGTH; i++) {
-            if (((bitBoardAllie >>> i) & 0b1) == 1) {
-                
-                for (int k = 0; k < 5; k++) {
+//         for (premiereCaseDansLigne = 8; premiereCaseDansLigne < 63; premiereCaseDansLigne += 8) {
+//             // on récupère un bitBoard représentant les jetons alliés dans la ligne
+//             jetonsAlliesDansLigne = bitBoardAllie & Masks.getMask(premiereCaseDansLigne, Masks.SE_NO);
+//             System.out.println(Long.toBinaryString(jetonsAlliesDansLigne));
+//             // s'il y a des jetons alliés dans la ligne
+//             if (jetonsAlliesDansLigne != 0) {
+//                 // On récupère un bitboard représentant les jetons adverses dans la ligne
+//                 //jetonsAdversesDansLigne = Masks.getPiecesNToS(premiereCaseDansLigne, bitBoardAdverse);
+//                 jetonsAdversesDansLigne = bitBoardAdverse & Masks.getMask(premiereCaseDansLigne, Masks.SE_NO);
+//                 // on compte le nombre de jetons dans la ligne
+//                 nombreJetonsDansLigne = countJetonsDansLigne(jetonsAlliesDansLigne | jetonsAdversesDansLigne);
+//                 deplacementDansLigne = nombreJetonsDansLigne * 9;
+//                 // pour chaque case dans la ligne
+//                 limiteLigne = 63;
+//                 for(int caseJeton = premiereCaseDansLigne; caseJeton <= limiteLigne; caseJeton += 9) {
+//                     // s'il y a un jeton allié dans la case
+//                     if (((jetonsAlliesDansLigne >>> caseJeton) & 0b1) != 0) {
+//                         caseDestination = caseJeton - deplacementDansLigne;
+//                         // si la case n'est pas trop près du bord
+//                         if ((caseDestination >= premiereCaseDansLigne) && 
+//                         // si la case d'arrivée n'est pas occupée par un jeton allié
+//                         (((jetonsAlliesDansLigne >>> (caseDestination)) & 0b1) == 0) &&
+//                         // si les cases intermédiaires ne sont pas occupées par un jeton adverse
+//                         ((((-1L >>> (64 - (deplacementDansLigne - 1))) << (caseDestination + 1)) & jetonsAdversesDansLigne) == 0)) {
+//                             // on ajoute un GameInstance enfant dans le GameInstance actuel
+//                             newBitBoards = Masks.movePiece(caseJeton, caseDestination, bitBoardAllie,bitBoardAdverse);
+//                             if ((newBitBoards[1] & bitBoardAdverse) != bitBoardAdverse ) {
+//                                 if (this.tourDeBlanc) {
+//                                     GameInstance enfant = new GameInstance(newBitBoards[0], newBitBoards[1], !tourDeBlanc, 
+//                                                             this, nbBlancs, (nbNoirs - 1), 
+//                                                             Masks.getMovementCode(caseJeton, caseDestination));
+//                                     children.add(enfant);
+//                                 }
+//                                 else {
+//                                     GameInstance enfant = new GameInstance(newBitBoards[0], newBitBoards[1], !tourDeBlanc, 
+//                                                             this, (nbBlancs - 1), nbNoirs, 
+//                                                             Masks.getMovementCode(caseJeton, caseDestination));
+//                                     children.add(enfant);
+//                                 }
+//                             }
+//                             else {
+//                                 GameInstance enfant = new GameInstance(newBitBoards[0], newBitBoards[1], !tourDeBlanc, 
+//                                                         this, nbBlancs, nbNoirs, 
+//                                                         Masks.getMovementCode(caseJeton, caseDestination));
+//                                 children.add(enfant);
+//                             }
+//                         }
+                        
+//                         // dans l'autre direction
+//                         caseDestination = caseJeton + deplacementDansLigne;
+//                         // si la case n'est pas trop près du bord
+//                         if ((limiteLigne >= caseDestination) && 
+//                         // si la case d'arrivée n'est pas occupée par un jeton allié
+//                         (((jetonsAlliesDansLigne >>> (caseDestination)) & 0b1) == 0) &&
+//                         // si les cases intermédiaires ne sont pas occupées par un jeton adverse
+//                         ((((-1L >>> (64 - deplacementDansLigne)) << caseJeton) & jetonsAdversesDansLigne) == 0)) {
+//                             // on ajoute un GameInstance enfant dans le GameInstance actuel
+//                             newBitBoards = Masks.movePiece(caseJeton, caseDestination, bitBoardAllie,bitBoardAdverse);
+//                             if ((newBitBoards[1] & bitBoardAdverse) != bitBoardAdverse ) {
+//                                 if (this.tourDeBlanc) {
+//                                     GameInstance enfant = new GameInstance(newBitBoards[0], newBitBoards[1], !tourDeBlanc, 
+//                                                             this, nbBlancs, (nbNoirs - 1), 
+//                                                             Masks.getMovementCode(caseJeton, caseDestination));
+//                                     children.add(enfant);
+//                                 }
+//                                 else {
+//                                     GameInstance enfant = new GameInstance(newBitBoards[0], newBitBoards[1], !tourDeBlanc, 
+//                                                             this, (nbBlancs - 1), nbNoirs, 
+//                                                             Masks.getMovementCode(caseJeton, caseDestination));
+//                                     children.add(enfant);
+//                                 }
+//                             }
+//                             else {
+//                                 GameInstance enfant = new GameInstance(newBitBoards[0], newBitBoards[1], !tourDeBlanc, 
+//                                                         this, nbBlancs, nbNoirs, 
+//                                                         Masks.getMovementCode(caseJeton, caseDestination));
+//                                 children.add(enfant);
+//                             }
+//                         }
+//                     }
+//                 }
+//             }
+//         }
 
-                }
-            }
-        }
-         // Pour chaque direction possible                            
-         //jetons sur la direction
-                                // Check si il y a des jetons adverses en chemin;
-// si chemin jusqu'à (pos + jetonsSurLaDirection) est libre (pas de jetons adverses) 
-                                // et si l'emplacement d'arrivée ne depasse pas l'échiquier
-                                // et si l'emplacement d'arrivée n'est pas un jeton allié
-                                                                    // si emplacement d'arrivée a un jeton adverse, on l'enlève.
-                                    //creer enfant, determiner parent, ajouter a la liste, attribuer last move
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-        // pour chaque jeton du joueur actuel
-        for (int r = 0; r < 8; r++){
-            for (int c = 0; c < 8; c++){
-                if (grid[r][c] == jetonAllieID){
-                    int[] dirX;
-                    int[] dirY;
-                    if (c <= 0) {
-                        dirX = new int[] { 0, 1 };
-                    } else if (c < 7) {
-                        dirX = new int[] { -1, 0, 1 };
-                    } else {
-                        dirX = new int[] { -1, 0 };
-                    }
-
-                    if (r <= 0) {
-                        dirY = new int[] { 0, 1 };
-                    } else if (r < 7) {
-                        dirY = new int[] { -1, 0, 1 };
-                    } else {
-                        dirY = new int[] { -1, 0 };
-                    }
-                    int jetonsSurLaDirection = -2000;
-                    String directionChoisie = "aucune";
-                    // Pour chaque direction possible
-                    for (int i = 0; i < dirX.length; i++) {
-                        for (int j = 0; j < dirY.length; j++) {
-                            int dirx = dirX[i];
-                            int diry = dirY[j];
-
-                            System.out.println("dirX: " + dirX[i] + " dirY: " + dirY[j]);
-                            //jetons sur la direction
-                            if(!(dirX[i]==0 && dirY[j] == 0)){
-                                if ((dirX[i]==1 || dirX[i]==-1) && dirY[j] == 0){
-                                    jetonsSurLaDirection = jetonsEnLigne[r];
-                                    directionChoisie="Direction : O-E";
-                                }
-                                else if ((dirY[j]==1 || dirY[j]==-1) && dirX[i] == 0){
-                                    jetonsSurLaDirection = jetonsEnColonne[c];
-                                    directionChoisie="Direction : N-S";
-                                }
-                                else if ((dirX[i]==1 && dirY[j] == 1) || (dirX[i]==-1 && dirY[j]==-1)){
-                                    jetonsSurLaDirection = tabDiagSONE[r][c];
-                                    directionChoisie="Direction : SO-NE";
-                                }
-                                else if ((dirX[i]==1 && dirY[j] == -1) || (dirX[i]==-1 && dirY[j]==1)){
-                                    jetonsSurLaDirection = tabDiagNOSE[r][c];
-                                    directionChoisie="Direction : NO-SE";
-
+/**************************************************************************************************************
+ *                                                  SUD-OUEST_NORD-EST
+ **************************************************************************************************************/ 
+        for (premiereCaseDansLigne = 1; premiereCaseDansLigne < 8; premiereCaseDansLigne++) {
+            // on récupère un bitBoard représentant les jetons alliés dans la ligne
+            jetonsAlliesDansLigne = bitBoardAllie & Masks.getMask(premiereCaseDansLigne, Masks.SO_NE);
+            System.out.println(Long.toBinaryString(jetonsAlliesDansLigne));
+            // s'il y a des jetons alliés dans la ligne
+            if (jetonsAlliesDansLigne != 0) {
+                // On récupère un bitboard représentant les jetons adverses dans la ligne
+                //jetonsAdversesDansLigne = Masks.getPiecesNToS(premiereCaseDansLigne, bitBoardAdverse);
+                jetonsAdversesDansLigne = bitBoardAdverse & Masks.getMask(premiereCaseDansLigne, Masks.SO_NE);
+                // on compte le nombre de jetons dans la ligne
+                nombreJetonsDansLigne = countJetonsDansLigne(jetonsAlliesDansLigne | jetonsAdversesDansLigne);
+                deplacementDansLigne = nombreJetonsDansLigne * 7;
+                // pour chaque case dans la ligne
+                limiteLigne = premiereCaseDansLigne + 8 * premiereCaseDansLigne;
+                for(int caseJeton = premiereCaseDansLigne; caseJeton < limiteLigne; caseJeton += 7) {
+                    // s'il y a un jeton allié dans la case
+                    if (((jetonsAlliesDansLigne >>> caseJeton) & 0b1) != 0) {
+                        caseDestination = caseJeton - deplacementDansLigne;
+                        // si la case n'est pas trop près du bord
+                        if ((caseDestination >= premiereCaseDansLigne) && 
+                        // si la case d'arrivée n'est pas occupée par un jeton allié
+                        (((jetonsAlliesDansLigne >>> (caseDestination)) & 0b1) == 0) &&
+                        // si les cases intermédiaires ne sont pas occupées par un jeton adverse
+                        ((((-1L >>> (64 - (deplacementDansLigne - 1))) << (caseDestination + 1)) & jetonsAdversesDansLigne) == 0)) {
+                            // on ajoute un GameInstance enfant dans le GameInstance actuel
+                            newBitBoards = Masks.movePiece(caseJeton, caseDestination, bitBoardAllie,bitBoardAdverse);
+                            if ((newBitBoards[1] & bitBoardAdverse) != bitBoardAdverse ) {
+                                if (this.tourDeBlanc) {
+                                    GameInstance enfant = new GameInstance(newBitBoards[0], newBitBoards[1], !tourDeBlanc, 
+                                                            this, nbBlancs, (nbNoirs - 1), 
+                                                            Masks.getMovementCode(caseJeton, caseDestination));
+                                    children.add(enfant);
                                 }
                                 else {
-                                System.out.println("Something's wrong...");
-                                }
-                                System.out.println("Piece: R" + r + " C" + c +" " + directionChoisie + " Jetons en ligne: "+ jetonsSurLaDirection);
-
-                                boolean cheminLibre = true;
-                                // Check si il y a des jetons adverses en chemin;
-                                int newX;
-                                int newY;
-                                int step = 0;
-                                do {
-                                    newX = c + dirX[i]* step;
-                                    newY = r + dirY[j]* step;
-                                    if (grid[newY][newX] == jetonAdverseID){
-                                        cheminLibre = false;
-                                    }
-                                    step++;
-                                }
-                                while (
-                                    (step < jetonsSurLaDirection) && 
-                                    (newX < 8) &&
-                                    (newX >= 0) &&
-                                    (newY < 8) &&
-                                    (newY >= 0)
-                                );
-                        
-                                // si chemin jusqu'à (pos + jetonsSurLaDirection) est libre (pas de jetons adverses) 
-                                // et si l'emplacement d'arrivée ne depasse pas l'échiquier
-                                // et si l'emplacement d'arrivée n'est pas un jeton allié
-                                newX+= dirX[i];
-                                newY+= dirY[j];
-                                if(
-                                    cheminLibre && 
-                                    (newX < 8) &&
-                                    (newX >= 0) &&
-                                    (newY < 8) &&
-                                    (newY >= 0) &&
-                                    grid[newY][newX] != jetonAllieID
-                                ){
-                                    int newNbBlancs = nbBlancs;
-                                    int newNbNoirs = nbNoirs;
-                                    // si emplacement d'arrivée a un jeton adverse, on l'enlève.
-                                    if (grid[newY][newX]==jetonAdverseID){
-                                        if(tourDeBlanc){
-                                            newNbNoirs--;
-                                            Jnoir.retraitJeton(newX,newY);
-                                        }
-                                        else {
-                                            newNbBlancs--;
-                                            Jblanc.retraitJeton(newX,newY);
-                                        }
-                                    }
-                                    //creer enfant, determiner parent, ajouter a la liste, attribuer last move
-                                    int[][] childGrid = new int [8][8];
-                                    for(int k = 0; k < 8 ; k++){
-                                        childGrid[k] = grid[k].clone();
-                                    }
-                                    childGrid[r][c] = 0;
-                                    childGrid[newY][newX] = jetonAllieID;
-                                    System.out.println("New GameInstance created\n");
-                                    GameInstance enfant = new GameInstance(childGrid, !tourDeBlanc, this, newNbBlancs, newNbNoirs, generateLastMove(r, c, newX, newY));
+                                    GameInstance enfant = new GameInstance(newBitBoards[0], newBitBoards[1], !tourDeBlanc, 
+                                                            this, (nbBlancs - 1), nbNoirs, 
+                                                            Masks.getMovementCode(caseJeton, caseDestination));
                                     children.add(enfant);
-                                    
                                 }
                             }
-                            
+                            else {
+                                GameInstance enfant = new GameInstance(newBitBoards[0], newBitBoards[1], !tourDeBlanc, 
+                                                        this, nbBlancs, nbNoirs, 
+                                                        Masks.getMovementCode(caseJeton, caseDestination));
+                                children.add(enfant);
+                            }
+                        }
+                        
+                        // dans l'autre direction
+                        caseDestination = caseJeton + deplacementDansLigne;
+                        // si la case n'est pas trop près du bord
+                        if ((limiteLigne >= caseDestination) && 
+                        // si la case d'arrivée n'est pas occupée par un jeton allié
+                        (((jetonsAlliesDansLigne >>> (caseDestination)) & 0b1) == 0) &&
+                        // si les cases intermédiaires ne sont pas occupées par un jeton adverse
+                        ((((-1L >>> (64 - deplacementDansLigne)) << caseJeton) & jetonsAdversesDansLigne) == 0)) {
+                            // on ajoute un GameInstance enfant dans le GameInstance actuel
+                            newBitBoards = Masks.movePiece(caseJeton, caseDestination, bitBoardAllie,bitBoardAdverse);
+                            if ((newBitBoards[1] & bitBoardAdverse) != bitBoardAdverse ) {
+                                if (this.tourDeBlanc) {
+                                    GameInstance enfant = new GameInstance(newBitBoards[0], newBitBoards[1], !tourDeBlanc, 
+                                                            this, nbBlancs, (nbNoirs - 1), 
+                                                            Masks.getMovementCode(caseJeton, caseDestination));
+                                    children.add(enfant);
+                                }
+                                else {
+                                    GameInstance enfant = new GameInstance(newBitBoards[0], newBitBoards[1], !tourDeBlanc, 
+                                                            this, (nbBlancs - 1), nbNoirs, 
+                                                            Masks.getMovementCode(caseJeton, caseDestination));
+                                    children.add(enfant);
+                                }
+                            }
+                            else {
+                                GameInstance enfant = new GameInstance(newBitBoards[0], newBitBoards[1], !tourDeBlanc, 
+                                                        this, nbBlancs, nbNoirs, 
+                                                        Masks.getMovementCode(caseJeton, caseDestination));
+                                children.add(enfant);
+                            }
                         }
                     }
                 }
-            }            
+            }
+        }
+
+        for (premiereCaseDansLigne = 15; premiereCaseDansLigne < 63; premiereCaseDansLigne += 8) {
+            // on récupère un bitBoard représentant les jetons alliés dans la ligne
+            jetonsAlliesDansLigne = bitBoardAllie & Masks.getMask(premiereCaseDansLigne, Masks.SO_NE);
+            System.out.println(Long.toBinaryString(jetonsAlliesDansLigne));
+            // s'il y a des jetons alliés dans la ligne
+            if (jetonsAlliesDansLigne != 0) {
+                // On récupère un bitboard représentant les jetons adverses dans la ligne
+                //jetonsAdversesDansLigne = Masks.getPiecesNToS(premiereCaseDansLigne, bitBoardAdverse);
+                jetonsAdversesDansLigne = bitBoardAdverse & Masks.getMask(premiereCaseDansLigne, Masks.SO_NE);
+                // on compte le nombre de jetons dans la ligne
+                nombreJetonsDansLigne = countJetonsDansLigne(jetonsAlliesDansLigne | jetonsAdversesDansLigne);
+                deplacementDansLigne = nombreJetonsDansLigne * 7;
+                // pour chaque case dans la ligne
+                limiteLigne = 63;
+                for(int caseJeton = premiereCaseDansLigne; caseJeton < limiteLigne; caseJeton += 7) {
+                    // s'il y a un jeton allié dans la case
+                    if (((jetonsAlliesDansLigne >>> caseJeton) & 0b1) != 0) {
+                        caseDestination = caseJeton - deplacementDansLigne;
+                        // si la case n'est pas trop près du bord
+                        if ((caseDestination >= premiereCaseDansLigne) && 
+                        // si la case d'arrivée n'est pas occupée par un jeton allié
+                        (((jetonsAlliesDansLigne >>> (caseDestination)) & 0b1) == 0) &&
+                        // si les cases intermédiaires ne sont pas occupées par un jeton adverse
+                        ((((-1L >>> (64 - (deplacementDansLigne - 1))) << (caseDestination + 1)) & jetonsAdversesDansLigne) == 0)) {
+                            // on ajoute un GameInstance enfant dans le GameInstance actuel
+                            newBitBoards = Masks.movePiece(caseJeton, caseDestination, bitBoardAllie,bitBoardAdverse);
+                            if ((newBitBoards[1] & bitBoardAdverse) != bitBoardAdverse ) {
+                                if (this.tourDeBlanc) {
+                                    GameInstance enfant = new GameInstance(newBitBoards[0], newBitBoards[1], !tourDeBlanc, 
+                                                            this, nbBlancs, (nbNoirs - 1), 
+                                                            Masks.getMovementCode(caseJeton, caseDestination));
+                                    children.add(enfant);
+                                }
+                                else {
+                                    GameInstance enfant = new GameInstance(newBitBoards[0], newBitBoards[1], !tourDeBlanc, 
+                                                            this, (nbBlancs - 1), nbNoirs, 
+                                                            Masks.getMovementCode(caseJeton, caseDestination));
+                                    children.add(enfant);
+                                }
+                            }
+                            else {
+                                GameInstance enfant = new GameInstance(newBitBoards[0], newBitBoards[1], !tourDeBlanc, 
+                                                        this, nbBlancs, nbNoirs, 
+                                                        Masks.getMovementCode(caseJeton, caseDestination));
+                                children.add(enfant);
+                            }
+                        }
+                        
+                        // dans l'autre direction
+                        caseDestination = caseJeton + deplacementDansLigne;
+                        // si la case n'est pas trop près du bord
+                        if ((limiteLigne >= caseDestination) && 
+                        // si la case d'arrivée n'est pas occupée par un jeton allié
+                        (((jetonsAlliesDansLigne >>> (caseDestination)) & 0b1) == 0) &&
+                        // si les cases intermédiaires ne sont pas occupées par un jeton adverse
+                        ((((-1L >>> (64 - deplacementDansLigne)) << caseJeton) & jetonsAdversesDansLigne) == 0)) {
+                            // on ajoute un GameInstance enfant dans le GameInstance actuel
+                            newBitBoards = Masks.movePiece(caseJeton, caseDestination, bitBoardAllie,bitBoardAdverse);
+                            if ((newBitBoards[1] & bitBoardAdverse) != bitBoardAdverse ) {
+                                if (this.tourDeBlanc) {
+                                    GameInstance enfant = new GameInstance(newBitBoards[0], newBitBoards[1], !tourDeBlanc, 
+                                                            this, nbBlancs, (nbNoirs - 1), 
+                                                            Masks.getMovementCode(caseJeton, caseDestination));
+                                    children.add(enfant);
+                                }
+                                else {
+                                    GameInstance enfant = new GameInstance(newBitBoards[0], newBitBoards[1], !tourDeBlanc, 
+                                                            this, (nbBlancs - 1), nbNoirs, 
+                                                            Masks.getMovementCode(caseJeton, caseDestination));
+                                    children.add(enfant);
+                                }
+                            }
+                            else {
+                                GameInstance enfant = new GameInstance(newBitBoards[0], newBitBoards[1], !tourDeBlanc, 
+                                                        this, nbBlancs, nbNoirs, 
+                                                        Masks.getMovementCode(caseJeton, caseDestination));
+                                children.add(enfant);
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -381,7 +730,7 @@ public class GameInstance {
     public int countJetonsDansLigne(long jetonsDansLigne) {
         int count = 0;
 
-        while (jetonsDansLigne > 0) {
+        while (jetonsDansLigne != 0) {
             jetonsDansLigne &= (jetonsDansLigne - 1);
             count++;
         }
@@ -390,6 +739,14 @@ public class GameInstance {
 
     public int[][] getGrid() {
         return this.grid;
+    }
+
+    public long getBitBoardBlancs() {
+        return bitBoardBlancs;
+    }
+
+    public long getBitBoardNoirs() {
+        return bitBoardNoirs;
     }
 
     //temp
@@ -427,254 +784,4 @@ public class GameInstance {
     public String getLastMoveString(){
         return this.lastMove;
     }
-
-    // TO DO
-    // genere la liste des echiquiers possibles a partir du plateau courant
-    // (generateMovements)
-//     public void generateChildren() {
-//         int jetonAllieID;
-//         int jetonAdverseID;
-        
-//         // A qui est le tour - On attribue les jetons au joueur en cours
-//         int nbAdverses;
-//         if(this.tourDeBlanc){
-//             jetonAllieID = 4;
-//             jetonAdverseID = 2;
-//             nbAdverses = nbNoirs;
-//         }
-//         else {
-//             jetonAllieID = 2;
-//             jetonAdverseID = 4;
-//             nbAdverses = nbBlancs;
-//         }
-
-//         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//         //Jetons dans chaque ligne et chaque diagonale
-//         int[] jetonsEnLigne = new int[8];
-//         int[] jetonsEnColonne = new int[8];
-
-
-//         // NOSE = Nord Ouest à Sud Est et SONE = Sud Ouest à Nord Est // L = ligne C = Colonne
-//         int[] jetonsEnDiagNOSEL = new int[8];
-//         int[] jetonsEnDiagSONEL = new int[8];
-//         int[] jetonsEnDiagNOSEC = new int[8];
-//         int[] jetonsEnDiagSONEC = new int[8];
-//         int[][] tabDiagNOSE = new int[8][8];
-//         int[][] tabDiagSONE = new int[8][8];
-
-
-//         // NO - SE - L  
-//         for (int i = 0; i < 8 ; i++){
-//             int temp= 0;
-//             int c = 0;
-//             for (int j = i ; j < 8; j++){
-//                 if(grid[j][c]==2||grid[j][c]==4){
-//                     temp++;
-//                 }
-//                 c++;
-//             }
-//             jetonsEnDiagNOSEL[i]=temp;
-//         }
-//         // fill tab
-//         for(int i = 0; i < 8 ; i++){
-//             for (int j = 0; j <= i; j ++){
-//                 tabDiagNOSE[i][j] = jetonsEnDiagNOSEL[i-j];
-//             }
-//         }
-//         // NO - SE - C
-//         for (int i = 0; i < 8 ; i++){
-//             int temp= 0;
-//             int r = 0;
-//             for (int j = i ; j < 8; j++){
-//                 if(grid[r][j]==2||grid[r][j]==4){
-//                     temp++;
-//                 }
-//                 r++;
-//             }
-//             jetonsEnDiagNOSEC[i]=temp;
-//         }
-//         //fill tab
-//         for(int i = 0; i < 8 ; i++){
-//             for (int j = i; j < 8; j++){
-//                 tabDiagNOSE[i][j] = jetonsEnDiagNOSEC[j-i];
-//             }
-//         }
-
-//         // SO - NE - C
-//         for (int i = 0; i < 8 ; i++){
-//             int temp = 0;
-//             int r = i;
-//             for (int j = 0 ; j <= i ; j++){
-//                 if(grid[j][r]==2||grid[j][r]==4){
-//                     temp++;
-//                 }
-//                 r--;
-//             }
-//             jetonsEnDiagSONEC[i]=temp;
-//         }
-        
-//         // fill tab
-//         for(int i = 0; i < 8 ; i++){
-//             for (int j = 0; j <= i; j++){
-//                 tabDiagSONE[j][i - j] = jetonsEnDiagSONEC[i];
-//             }
-//         }
-
-
-//         // SO - NE - L
-//         for (int i = 0; i < 8 ; i++){
-//             int temp = 0;
-//             int r = i;
-//             for (int j = 7 ; j >= i; j--){
-//                 if(grid[r][j]==2||grid[r][j]==4){
-//                     temp++;
-//                 }
-//                 r++;
-//             }
-//             jetonsEnDiagSONEL[i]=temp;
-//         }
-
-//         // fill tab
-//         for(int i = 0; i < 8 ; i++){
-//             for (int j = 0; i + j < 8; j++){
-//                 tabDiagSONE[i + j][7 - j] = jetonsEnDiagSONEL[i];
-//             }
-//         } 
-        
-        
-//         // Lines and columns
-//         for (int r = 0; r < 8; r++){
-//             for (int c = 0; c < 8; c++){
-//                 if(grid[r][c]==2||grid[r][c]==4){
-//                     jetonsEnLigne[r]++;
-//                     jetonsEnColonne[c]++;
-//                 }
-//             }
-//         }
-
-// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-//         // pour chaque jeton du joueur actuel
-//         for (int r = 0; r < 8; r++){
-//             for (int c = 0; c < 8; c++){
-//                 if (grid[r][c] == jetonAllieID){
-//                     int[] dirX;
-//                     int[] dirY;
-//                     if (c <= 0) {
-//                         dirX = new int[] { 0, 1 };
-//                     } else if (c < 7) {
-//                         dirX = new int[] { -1, 0, 1 };
-//                     } else {
-//                         dirX = new int[] { -1, 0 };
-//                     }
-
-//                     if (r <= 0) {
-//                         dirY = new int[] { 0, 1 };
-//                     } else if (r < 7) {
-//                         dirY = new int[] { -1, 0, 1 };
-//                     } else {
-//                         dirY = new int[] { -1, 0 };
-//                     }
-//                     int jetonsSurLaDirection = -2000;
-//                     String directionChoisie = "aucune";
-//                     // Pour chaque direction possible
-//                     for (int i = 0; i < dirX.length; i++) {
-//                         for (int j = 0; j < dirY.length; j++) {
-//                             int dirx = dirX[i];
-//                             int diry = dirY[j];
-
-//                             System.out.println("dirX: " + dirX[i] + " dirY: " + dirY[j]);
-//                             //jetons sur la direction
-//                             if(!(dirX[i]==0 && dirY[j] == 0)){
-//                                 if ((dirX[i]==1 || dirX[i]==-1) && dirY[j] == 0){
-//                                     jetonsSurLaDirection = jetonsEnLigne[r];
-//                                     directionChoisie="Direction : O-E";
-//                                 }
-//                                 else if ((dirY[j]==1 || dirY[j]==-1) && dirX[i] == 0){
-//                                     jetonsSurLaDirection = jetonsEnColonne[c];
-//                                     directionChoisie="Direction : N-S";
-//                                 }
-//                                 else if ((dirX[i]==1 && dirY[j] == 1) || (dirX[i]==-1 && dirY[j]==-1)){
-//                                     jetonsSurLaDirection = tabDiagSONE[r][c];
-//                                     directionChoisie="Direction : SO-NE";
-//                                 }
-//                                 else if ((dirX[i]==1 && dirY[j] == -1) || (dirX[i]==-1 && dirY[j]==1)){
-//                                     jetonsSurLaDirection = tabDiagNOSE[r][c];
-//                                     directionChoisie="Direction : NO-SE";
-
-//                                 }
-//                                 else {
-//                                 System.out.println("Something's wrong...");
-//                                 }
-//                                 System.out.println("Piece: R" + r + " C" + c +" " + directionChoisie + " Jetons en ligne: "+ jetonsSurLaDirection);
-
-//                                 boolean cheminLibre = true;
-//                                 // Check si il y a des jetons adverses en chemin;
-//                                 int newX;
-//                                 int newY;
-//                                 int step = 0;
-//                                 do {
-//                                     newX = c + dirX[i]* step;
-//                                     newY = r + dirY[j]* step;
-//                                     if (grid[newY][newX] == jetonAdverseID){
-//                                         cheminLibre = false;
-//                                     }
-//                                     step++;
-//                                 }
-//                                 while (
-//                                     (step < jetonsSurLaDirection) && 
-//                                     (newX < 8) &&
-//                                     (newX >= 0) &&
-//                                     (newY < 8) &&
-//                                     (newY >= 0)
-//                                 );
-                        
-//                                 // si chemin jusqu'à (pos + jetonsSurLaDirection) est libre (pas de jetons adverses) 
-//                                 // et si l'emplacement d'arrivée ne depasse pas l'échiquier
-//                                 // et si l'emplacement d'arrivée n'est pas un jeton allié
-//                                 newX+= dirX[i];
-//                                 newY+= dirY[j];
-//                                 if(
-//                                     cheminLibre && 
-//                                     (newX < 8) &&
-//                                     (newX >= 0) &&
-//                                     (newY < 8) &&
-//                                     (newY >= 0) &&
-//                                     grid[newY][newX] != jetonAllieID
-//                                 ){
-//                                     int newNbBlancs = nbBlancs;
-//                                     int newNbNoirs = nbNoirs;
-//                                     // si emplacement d'arrivée a un jeton adverse, on l'enlève.
-//                                     if (grid[newY][newX]==jetonAdverseID){
-//                                         if(tourDeBlanc){
-//                                             newNbNoirs--;
-//                                             Jnoir.retraitJeton(newX,newY);
-//                                         }
-//                                         else {
-//                                             newNbBlancs--;
-//                                             Jblanc.retraitJeton(newX,newY);
-//                                         }
-//                                     }
-//                                     //creer enfant, determiner parent, ajouter a la liste, attribuer last move
-//                                     int[][] childGrid = new int [8][8];
-//                                     for(int k = 0; k < 8 ; k++){
-//                                         childGrid[k] = grid[k].clone();
-//                                     }
-//                                     childGrid[r][c] = 0;
-//                                     childGrid[newY][newX] = jetonAllieID;
-//                                     System.out.println("New GameInstance created\n");
-//                                     GameInstance enfant = new GameInstance(childGrid, !tourDeBlanc, this, newNbBlancs, newNbNoirs, generateLastMove(r, c, newX, newY));
-//                                     children.add(enfant);
-                                    
-//                                 }
-//                             }
-                            
-//                         }
-//                     }
-//                 }
-//             }            
-//         }
-//     }
 }

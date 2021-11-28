@@ -9,34 +9,11 @@ public class testApp {
         { 4, 0, 0, 0, 2, 0, 0, 4 }, { 4, 2, 0, 0, 0, 0, 0, 4 }, { 4, 0, 2, 4, 0, 0, 0, 0 },
         { 0, 0, 4, 2, 0, 0, 0, 4 }, { 0, 2, 0, 0, 2, 2, 2, 0 } };
 
+        long testLong = 0b1111111111111111111111111111111111111111111111111111111111111111L;
+        testLong = ((testLong >>> (64 - (24 - 1))) << 33);
         int[][] gridTest = gridRando;
-
-        String stringRouges = "";
-        String stringNoirs = "";
-
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                if (gridTest[i][j] == 2) {
-                    stringNoirs += "1";
-                    stringRouges += "0";
-                }
-                else if (gridTest[i][j] == 4){
-                    stringNoirs += "0";
-                    stringRouges += "1";
-                }
-                else {
-                    stringNoirs += "0";
-                    stringRouges += "0";
-                }
-            }
-        }
-        
-        long bitBoardRouges = Long.parseLong(stringRouges, 2);
-        long bitBoardNoirs = Long.parseLong(stringNoirs, 2);
-        printGrid(gridRando);
-        Masks.getPiecesNToS(5, bitBoardRouges | bitBoardNoirs);
         // System.out.println(Long.toBinaryString(bitBoardNoirs));
-        //testGenerateChildren();
+        testGenerateChildren();
         //testFindJetonsInARow(bitBoardRouges, bitBoardNoirs);
         //testFonctionEval(new GameInstance());
         //testMinimax();
@@ -55,165 +32,197 @@ public class testApp {
     public static void testGenerateChildren(){
         GameInstance gameInit = new GameInstance();
         int[][] gridTest = new int[][] { 
-        { 0, 0, 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 0, 0, 0, 0 }, 
-        { 0, 4, 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 0, 0, 0, 0 }}; 
-        GameInstance gameTest = new GameInstance(gridTest, true, null, 1, 0, null);
+        { 4, 4, 4, 4, 4, 4, 4, 4 },
+        { 4, 0, 0, 0, 0, 0, 0, 4 }, 
+        { 4, 0, 0, 0, 0, 0, 0, 4 },
+        { 4, 0, 0, 0, 0, 0, 0, 4 },
+        { 4, 0, 0, 0, 0, 0, 0, 4 },
+        { 4, 0, 0, 0, 0, 0, 0, 4 },
+        { 4, 0, 0, 0, 0, 0, 0, 4 },
+        { 4, 4, 4, 4, 4, 4, 4, 4 }}; 
+
+        long bitBoardBlancs = 0L;
+        long bitBoardNoirs = 0L;
+
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                if (gridTest[i][j] == 2) {
+                    bitBoardNoirs = bitBoardNoirs * 2 + 1;
+                    bitBoardBlancs = bitBoardBlancs * 2;
+                }
+                else if (gridTest[i][j] == 4){
+                    bitBoardNoirs = bitBoardNoirs * 2;
+                    bitBoardBlancs = bitBoardBlancs * 2 + 1;
+                }
+                else {
+                    bitBoardNoirs = bitBoardNoirs * 2;
+                    bitBoardBlancs = bitBoardBlancs * 2;
+                }
+            }
+        }
+
+        GameInstance gameTest = new GameInstance(bitBoardBlancs, bitBoardNoirs, true, null, 9, 7, null);
+        printGrid(bitBoardBlancs, bitBoardNoirs);
         gameTest.generateChildren();
         //printGrid(gameTest.getGrid());
         ArrayList<GameInstance> children = gameTest.getChildren();
         for(int i = 0; i < children.size(); i++){
             System.out.println(children.get(i).getLastMoveString());
-            printGrid(children.get(i).getGrid());
+            printGrid(children.get(i).getBitBoardBlancs(), children.get(i).getBitBoardNoirs());
         }
     }
 
-    public static void testFindJetonsInARow(long bitBoardRouges, long bitBoardNoirs){
+    // public static void testFindJetonsInARow(long bitBoardRouges, long bitBoardNoirs){
 
-        //Jetons dans chaque ligne et chaque diagonale
-        int[] jetonsEnLigne = new int[8];
-        int[] jetonsEnColonne = new int[8];
+    //     //Jetons dans chaque ligne et chaque diagonale
+    //     int[] jetonsEnLigne = new int[8];
+    //     int[] jetonsEnColonne = new int[8];
 
-        // NOSE = Nord Ouest à Sud Est et SONE = Sud Ouest à Nord Est // L = ligne C = Colonne
-        int[] jetonsEnDiagNOSEL = new int[8];
-        int[] jetonsEnDiagSONEL = new int[8];
-        int[] jetonsEnDiagNOSEC = new int[8];
-        int[] jetonsEnDiagSONEC = new int[8];
-        int[][] tabDiagNOSE = new int[8][8];
-        int[][] tabDiagSONE = new int[8][8];
+    //     // NOSE = Nord Ouest à Sud Est et SONE = Sud Ouest à Nord Est // L = ligne C = Colonne
+    //     int[] jetonsEnDiagNOSEL = new int[8];
+    //     int[] jetonsEnDiagSONEL = new int[8];
+    //     int[] jetonsEnDiagNOSEC = new int[8];
+    //     int[] jetonsEnDiagSONEC = new int[8];
+    //     int[][] tabDiagNOSE = new int[8][8];
+    //     int[][] tabDiagSONE = new int[8][8];
 
 
-        // NO - SE - L  
-        for (int i = 0; i < 8 ; i++){
-            int temp= 0;
-            int c = 0;
-            for (int j = i ; j < 8; j++){
-                if(grid[j][c]==2||grid[j][c]==4){
-                    temp++;
-                }
-                c++;
-            }
-            jetonsEnDiagNOSEL[i]=temp;
-        }
-        // fill tab
-        for(int i = 0; i < 8 ; i++){
-            for (int j = 0; j <= i; j ++){
-                tabDiagNOSE[i][j] = jetonsEnDiagNOSEL[i-j];
-            }
-        }
-        // NO - SE - C
-        for (int i = 0; i < 8 ; i++){
-            int temp= 0;
-            int r = 0;
-            for (int j = i ; j < 8; j++){
-                if(grid[r][j]==2||grid[r][j]==4){
-                    temp++;
-                }
-                r++;
-            }
-            jetonsEnDiagNOSEC[i]=temp;
-        }
-        //fill tab
-        for(int i = 0; i < 8 ; i++){
-            for (int j = i; j < 8; j++){
-                tabDiagNOSE[i][j] = jetonsEnDiagNOSEC[j-i];
-            }
-        }
+    //     // NO - SE - L  
+    //     for (int i = 0; i < 8 ; i++){
+    //         int temp= 0;
+    //         int c = 0;
+    //         for (int j = i ; j < 8; j++){
+    //             if(grid[j][c]==2||grid[j][c]==4){
+    //                 temp++;
+    //             }
+    //             c++;
+    //         }
+    //         jetonsEnDiagNOSEL[i]=temp;
+    //     }
+    //     // fill tab
+    //     for(int i = 0; i < 8 ; i++){
+    //         for (int j = 0; j <= i; j ++){
+    //             tabDiagNOSE[i][j] = jetonsEnDiagNOSEL[i-j];
+    //         }
+    //     }
+    //     // NO - SE - C
+    //     for (int i = 0; i < 8 ; i++){
+    //         int temp= 0;
+    //         int r = 0;
+    //         for (int j = i ; j < 8; j++){
+    //             if(grid[r][j]==2||grid[r][j]==4){
+    //                 temp++;
+    //             }
+    //             r++;
+    //         }
+    //         jetonsEnDiagNOSEC[i]=temp;
+    //     }
+    //     //fill tab
+    //     for(int i = 0; i < 8 ; i++){
+    //         for (int j = i; j < 8; j++){
+    //             tabDiagNOSE[i][j] = jetonsEnDiagNOSEC[j-i];
+    //         }
+    //     }
 
-        // SO - NE - C
-        for (int i = 0; i < 8 ; i++){
-            int temp = 0;
-            int r = i;
-            for (int j = 0 ; j <= i ; j++){
-                if(grid[j][r]==2||grid[j][r]==4){
-                    temp++;
-                }
-                r--;
-            }
-            jetonsEnDiagSONEC[i]=temp;
-        }
+    //     // SO - NE - C
+    //     for (int i = 0; i < 8 ; i++){
+    //         int temp = 0;
+    //         int r = i;
+    //         for (int j = 0 ; j <= i ; j++){
+    //             if(grid[j][r]==2||grid[j][r]==4){
+    //                 temp++;
+    //             }
+    //             r--;
+    //         }
+    //         jetonsEnDiagSONEC[i]=temp;
+    //     }
         
-        // fill tab
-        for(int i = 0; i < 8 ; i++){
-            for (int j = 0; j <= i; j++){
-                tabDiagSONE[j][i - j] = jetonsEnDiagSONEC[i];
-            }
-        }
+    //     // fill tab
+    //     for(int i = 0; i < 8 ; i++){
+    //         for (int j = 0; j <= i; j++){
+    //             tabDiagSONE[j][i - j] = jetonsEnDiagSONEC[i];
+    //         }
+    //     }
 
 
-        // SO - NE - L
-        for (int i = 0; i < 8 ; i++){
-            int temp = 0;
-            int r = i;
-            for (int j = 7 ; j >= i; j--){
-                if(grid[r][j]==2||grid[r][j]==4){
-                    temp++;
-                }
-                r++;
-            }
-            jetonsEnDiagSONEL[i]=temp;
-        }
+    //     // SO - NE - L
+    //     for (int i = 0; i < 8 ; i++){
+    //         int temp = 0;
+    //         int r = i;
+    //         for (int j = 7 ; j >= i; j--){
+    //             if(grid[r][j]==2||grid[r][j]==4){
+    //                 temp++;
+    //             }
+    //             r++;
+    //         }
+    //         jetonsEnDiagSONEL[i]=temp;
+    //     }
 
-        // fill tab
-        for(int i = 0; i < 8 ; i++){
-            for (int j = 0; i + j < 8; j++){
-                tabDiagSONE[i + j][7 - j] = jetonsEnDiagSONEL[i];
-            }
-        } 
+    //     // fill tab
+    //     for(int i = 0; i < 8 ; i++){
+    //         for (int j = 0; i + j < 8; j++){
+    //             tabDiagSONE[i + j][7 - j] = jetonsEnDiagSONEL[i];
+    //         }
+    //     } 
         
         
-        // Lines and columns
-        for (int r = 0; r < 8; r++){
-            for (int c = 0; c < 8; c++){
-                if(grid[r][c]==2||grid[r][c]==4){
-                    jetonsEnLigne[r]++;
-                    jetonsEnColonne[c]++;
-                }
-            }
-        }
-        System.out.println("grid: ");
-        printGrid(grid);
-        System.out.println("\njetons en ligne: ");
-        for(int i = 0; i < 8 ; i++){
-            System.out.print(jetonsEnLigne[i]);
-        }
-        System.out.println("\njetons en colonne: ");
-        for(int i = 0; i < 8 ; i++){
-            System.out.print(jetonsEnColonne[i]);
-        }
-        System.out.println("\njetons en diagNOSEL: ");
-        for(int i = 0; i < 8 ; i++){
-            System.out.print(jetonsEnDiagNOSEL[i]);
-        }
-        System.out.println("\njetons en diagNOSEC: ");
-        for(int i = 0; i < 8 ; i++){
-            System.out.print(jetonsEnDiagNOSEC[i]);
-        }
-        System.out.println("\njetons en diagSONEC: ");
-        for(int i = 0; i < 8 ; i++){
-            System.out.print(jetonsEnDiagSONEC[i]);
-        }
-        System.out.println("\njetons en diagSONEL: ");
-        for(int i = 0; i < 8 ; i++){
-            System.out.print(jetonsEnDiagSONEL[i]);
-        }
-        System.out.println("\nGrid NOSE: ");
-        printGrid(tabDiagNOSE);
-        System.out.println("\nGrid SONE: ");
-        printGrid(tabDiagSONE);
-    }
+    //     // Lines and columns
+    //     for (int r = 0; r < 8; r++){
+    //         for (int c = 0; c < 8; c++){
+    //             if(grid[r][c]==2||grid[r][c]==4){
+    //                 jetonsEnLigne[r]++;
+    //                 jetonsEnColonne[c]++;
+    //             }
+    //         }
+    //     }
+    //     System.out.println("grid: ");
+    //     printGrid(grid);
+    //     System.out.println("\njetons en ligne: ");
+    //     for(int i = 0; i < 8 ; i++){
+    //         System.out.print(jetonsEnLigne[i]);
+    //     }
+    //     System.out.println("\njetons en colonne: ");
+    //     for(int i = 0; i < 8 ; i++){
+    //         System.out.print(jetonsEnColonne[i]);
+    //     }
+    //     System.out.println("\njetons en diagNOSEL: ");
+    //     for(int i = 0; i < 8 ; i++){
+    //         System.out.print(jetonsEnDiagNOSEL[i]);
+    //     }
+    //     System.out.println("\njetons en diagNOSEC: ");
+    //     for(int i = 0; i < 8 ; i++){
+    //         System.out.print(jetonsEnDiagNOSEC[i]);
+    //     }
+    //     System.out.println("\njetons en diagSONEC: ");
+    //     for(int i = 0; i < 8 ; i++){
+    //         System.out.print(jetonsEnDiagSONEC[i]);
+    //     }
+    //     System.out.println("\njetons en diagSONEL: ");
+    //     for(int i = 0; i < 8 ; i++){
+    //         System.out.print(jetonsEnDiagSONEL[i]);
+    //     }
+    //     System.out.println("\nGrid NOSE: ");
+    //     printGrid(tabDiagNOSE);
+    //     System.out.println("\nGrid SONE: ");
+    //     printGrid(tabDiagSONE);
+    // }
 
-    static public void  printGrid(int[][] grid){
-        for (int i = 0; i< 8; i++){
-            for (int j = 0; j < 8; j++){
-                System.out.print(" " + grid[i][j]);
+    static public void  printGrid(long bitBoardBlancs, long bitBoardNoirs){
+        for (int i = 63; i >= 0; i--){
+            if (((bitBoardBlancs >>> i) & 0b1) != 0) {
+                
+                System.out.print(" 4");
             }
-            System.out.println();
+            else if (((bitBoardNoirs >>> i) & 0b1) != 0) {
+                
+                System.out.print(" 2");
+            }
+            else{
+                System.out.print(" 0");
+            } 
+            if (i % 8 == 0){
+                System.out.println();
+            }
         }
         System.out.println();
         System.out.println();

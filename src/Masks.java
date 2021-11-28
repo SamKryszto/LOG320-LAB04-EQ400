@@ -1,10 +1,20 @@
 ﻿public class Masks {
     
-    public static final int N_S = 0; 
-    public static final int NE_SO = 1; 
+    public static final int S_N = 0; 
+    public static final int SO_NE = 1; 
     public static final int E_O = 2; 
     public static final int SE_NO = 3;
-    public static final int TILE_MASK = 4;
+
+    private static final String[] tileCodes = { 
+        "A8", "B8", "C8", "D8", "E8", "F8", "G8", "H8",
+        "A7", "B7", "C7", "D7", "E7", "F7", "G7", "H7",
+        "A6", "B6", "C6", "D6", "E6", "F6", "G6", "H6",
+        "A5", "B5", "C5", "D5", "E5", "F5", "G5", "H5",
+        "A4", "B4", "C4", "D4", "E4", "F4", "G4", "H4",
+        "A3", "B3", "C3", "D3", "E3", "F3", "G3", "H3",
+        "A2", "B2", "C2", "D2", "E2", "F2", "G2", "H2",
+        "A1", "B1", "C1", "D1", "E1", "F1", "G1", "H1",
+    };
     
     private static final long[][] masksByDirectionAndPieceCount = {
 
@@ -399,7 +409,7 @@
     public static int getPiecesNToS(int firstTileInLine, long bitboard) {
         int bitLine = 0b0;
         System.out.println(Long.toBinaryString(bitboard));
-        long piecesInLine = (bitboard & masksByTile[63 - firstTileInLine][N_S]);
+        long piecesInLine = (bitboard & masksByTile[63 - firstTileInLine][S_N]);
         System.out.println(Long.toBinaryString(piecesInLine));
         piecesInLine = piecesInLine >>> (firstTileInLine);
         while (piecesInLine != 0) {
@@ -412,13 +422,18 @@
     }
 
     public static long getMask(int tileNumber, int direction) {
-        return masksByTile[tileNumber][direction];
+        return masksByTile[63 - tileNumber][direction];
+    }
+
+    public static String getMovementCode(int originalTileNumber, int destinationTileNumber) {
+        return (tileCodes[63 - originalTileNumber] + tileCodes[63 - destinationTileNumber]);
     }
 
     public static long[] movePiece(int originalTile, int destinationTile, long movingBitBoard, long unmovingBitBoard) {
-        long[] bitBoards = {((movingBitBoard & ~(0b1 << originalTile)) | (0b1 << destinationTile)), 
-            (unmovingBitBoard & ~masksByTile[destinationTile][TILE_MASK])};
+        long[] bitBoards = {((movingBitBoard & ~(0b1L << originalTile)) | (0b1L << destinationTile)), 
+            (unmovingBitBoard & ~(0b1L << destinationTile))};
         
         return bitBoards;
     }
+
 }
