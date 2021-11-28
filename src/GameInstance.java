@@ -364,12 +364,9 @@ public class GameInstance {
                                 do {
                                     newX = c + dirX[i] * step;
                                     newY = r + dirY[j] * step;
-                                    System.out.println("Origine" + r + "-" + c);
-                                    System.out.println("Destination" + newY + "-" + newX);
                                     if (newY < 8 && newY >= 0 && newX < 8 && newX >= 0) {
                                         if (grid[newY][newX] == jetonAdverseID) {
                                             cheminLibre = false;
-                                            System.out.println("Bloqué");
                                         }
                                         step++;
                                     }
@@ -456,6 +453,7 @@ public class GameInstance {
         for (int i = 0; i < children.size(); i++) {
             if (children.get(i).getScore() == score) {
                 child = children.get(i);
+                System.out.println(child.getLastMoveString());
             }
         }
         System.out.println(child.getLastMoveString());

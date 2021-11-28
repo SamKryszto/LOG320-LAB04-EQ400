@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 
 public class App {
 
@@ -60,13 +61,11 @@ public class App {
 					System.out.println("Nouvelle partie! Vous jouez blanc, entrez votre premier coup : ");
 					String move = null;
 					isWhite = true;
+
 					move = getBestMoveWithTimeAllowed(currentGameState, isWhite);
 					System.out.println("Move : " + move);
-					for (byte b : move.getBytes()) {
-						System.out.println(b);
-					}
-					byte[] bite = new byte[] { 46, 3, 47, 3 };
-					output.write(bite, 0, move.length());
+
+					output.write(move.getBytes(), 0, move.length());
 					output.flush();
 				}
 				// Debut de la partie en joueur Noir
