@@ -9,9 +9,35 @@ public class testApp {
         { 4, 0, 0, 0, 2, 0, 0, 4 }, { 4, 2, 0, 0, 0, 0, 0, 4 }, { 4, 0, 2, 4, 0, 0, 0, 0 },
         { 0, 0, 4, 2, 0, 0, 0, 4 }, { 0, 2, 0, 0, 2, 2, 2, 0 } };
 
+        int[][] gridTest = gridRando;
 
-        testGenerateChildren();
-        //testFindJetonsInARow(gridRando);
+        String stringRouges = "";
+        String stringNoirs = "";
+
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                if (gridTest[i][j] == 2) {
+                    stringNoirs += "1";
+                    stringRouges += "0";
+                }
+                else if (gridTest[i][j] == 4){
+                    stringNoirs += "0";
+                    stringRouges += "1";
+                }
+                else {
+                    stringNoirs += "0";
+                    stringRouges += "0";
+                }
+            }
+        }
+        
+        long bitBoardRouges = Long.parseLong(stringRouges, 2);
+        long bitBoardNoirs = Long.parseLong(stringNoirs, 2);
+        printGrid(gridRando);
+        Masks.getPiecesNToS(5, bitBoardRouges | bitBoardNoirs);
+        // System.out.println(Long.toBinaryString(bitBoardNoirs));
+        //testGenerateChildren();
+        //testFindJetonsInARow(bitBoardRouges, bitBoardNoirs);
         //testFonctionEval(new GameInstance());
         //testMinimax();
         
@@ -47,7 +73,7 @@ public class testApp {
         }
     }
 
-    public static void testFindJetonsInARow(int[][] grid){
+    public static void testFindJetonsInARow(long bitBoardRouges, long bitBoardNoirs){
 
         //Jetons dans chaque ligne et chaque diagonale
         int[] jetonsEnLigne = new int[8];

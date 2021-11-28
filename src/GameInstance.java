@@ -2,6 +2,8 @@ import java.util.ArrayList;
 
 public class GameInstance {
 
+    public static final int BIT_BOARD_LENGTH = 64;
+
     // liste des possibilités d'échiquier à partir des positions actuelles
     private ArrayList<GameInstance> children;
     private boolean tourDeBlanc; //true = blanc , false = noir
@@ -14,6 +16,9 @@ public class GameInstance {
     private String lastMove;
     private Joueur Jblanc;
     private Joueur Jnoir;
+    private long bitBoardRouges;
+    private long bitBoardNoirs;
+
 
     // temp
     private char column = 'A';
@@ -54,6 +59,22 @@ public class GameInstance {
 
     public GameInstance(int[][] grid, boolean tourDeBlanc, GameInstance parent, int nbBlancs, int nbNoirs, String lastMove) {
         this.grid = grid;
+        this.tourDeBlanc = tourDeBlanc;
+        this.parent = parent;
+        this.nbBlancs = nbBlancs;
+        this.nbNoirs = nbNoirs;
+        this.lastMove = lastMove;
+        this.children = new ArrayList<GameInstance>();
+        //rate();
+        // verifie si la partie est terminée et genere les enfants sinon
+        if (!gameOver) {
+           // A revoir: quand generer les enfants?
+        }
+    }
+
+    public GameInstance(long bitBoardRouges, long bitBoardNoirs, boolean tourDeBlanc, GameInstance parent, int nbBlancs, int nbNoirs, String lastMove) {
+        this.bitBoardRouges = bitBoardRouges;
+        this.bitBoardNoirs = bitBoardNoirs;
         this.tourDeBlanc = tourDeBlanc;
         this.parent = parent;
         this.nbBlancs = nbBlancs;
@@ -150,125 +171,82 @@ public class GameInstance {
     // genere la liste des echiquiers possibles a partir du plateau courant
     // (generateMovements)
     public void generateChildren() {
-        int jetonAllieID;
-        int jetonAdverseID;
+        long bitBoardAllie;
+        long bitBoardAdverse;
+        long jetonsAlliesDansLigne;
+        long jetonsAdversesDansLigne;
+        long jetonsTotauxDansLigne;
+        int nombreJetonsDansLigne;
+        int deplacementDansLigne;
+        int caseDestination;
         
         // A qui est le tour - On attribue les jetons au joueur en cours
-        int nbAdverses;
         if(this.tourDeBlanc){
-            jetonAllieID = 4;
-            jetonAdverseID = 2;
-            nbAdverses = nbNoirs;
+            bitBoardAllie = bitBoardRouges;
+            bitBoardAdverse = bitBoardNoirs;
         }
         else {
-            jetonAllieID = 2;
-            jetonAdverseID = 4;
-            nbAdverses = nbBlancs;
+            bitBoardAllie = bitBoardNoirs;
+            bitBoardAdverse = bitBoardRouges;
         }
 
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        //Jetons dans chaque ligne et chaque diagonale
-        int[] jetonsEnLigne = new int[8];
-        int[] jetonsEnColonne = new int[8];
-
-
-        // NOSE = Nord Ouest à Sud Est et SONE = Sud Ouest à Nord Est // L = ligne C = Colonne
-        int[] jetonsEnDiagNOSEL = new int[8];
-        int[] jetonsEnDiagSONEL = new int[8];
-        int[] jetonsEnDiagNOSEC = new int[8];
-        int[] jetonsEnDiagSONEC = new int[8];
-        int[][] tabDiagNOSE = new int[8][8];
-        int[][] tabDiagSONE = new int[8][8];
-
-
-        // NO - SE - L  
-        for (int i = 0; i < 8 ; i++){
-            int temp= 0;
-            int c = 0;
-            for (int j = i ; j < 8; j++){
-                if(grid[j][c]==2||grid[j][c]==4){
-                    temp++;
+        // pour chaque ligne d'action du jeu
+        int premiereCaseDansLigne = 0;
+        // on récupère un bitBoard représentant les jetons alliés dans la ligne
+        //jetonsAlliesDansLigne = Masks.getPiecesNToS(premiereCaseDansLigne, bitBoardAllie);
+        jetonsAlliesDansLigne = bitBoardAllie & Masks.getMask(premiereCaseDansLigne, Masks.N_S);
+        // s'il y a des jetons alliés dans la ligne
+        if (jetonsAlliesDansLigne != 0) {
+            // On récupère un bitboard représentant les jetons adverses dans la ligne
+            //jetonsAdversesDansLigne = Masks.getPiecesNToS(premiereCaseDansLigne, bitBoardAdverse);
+            jetonsAdversesDansLigne = Masks.getMask(premiereCaseDansLigne, Masks.N_S);
+            // on compte le nombre de jetons dans la ligne
+            nombreJetonsDansLigne = countJetonsDansLigne(jetonsAlliesDansLigne | jetonsAdversesDansLigne);
+            deplacementDansLigne = nombreJetonsDansLigne;
+            // pour chaque case dans la ligne
+            for(int i = premiereCaseDansLigne; i < 63; i += 8) {
+                // s'il y a un jeton allié dans la case
+                if (((jetonsAlliesDansLigne >>> i) & 0b1) != 0) {
+                    caseDestination = i - deplacementDansLigne;
+                    // si la case n'est pas trop près du bord
+                    if ((i >= deplacementDansLigne) && 
+                    // si la case d'arrivée n'est pas occupée par un jeton allié
+                    (((jetonsAlliesDansLigne >>> (caseDestination - 1)) & 0b1) == 0) &&
+                    // si les cases intermédiaires ne sont pas occupées par un jeton adverse
+                    (((((0b1 >> (deplacementDansLigne - 2)) << (caseDestination)) & jetonsAdversesDansLigne) == 0))) {
+                        // on ajoute un GameInstance enfant dans le GameInstance actuel
+                        movePiece(i, i - deplacementDansLigne, bitBoardAllie);
+                        GameInstance enfant = new GameInstance(childGrid, !tourDeBlanc, this, newNbBlancs, newNbNoirs, generateLastMove(r, c, newX, newY));
+                                    children.add(enfant);
+                    }
                 }
-                c++;
+                deplacementDansLigne += 8;
             }
-            jetonsEnDiagNOSEL[i]=temp;
-        }
-        // fill tab
-        for(int i = 0; i < 8 ; i++){
-            for (int j = 0; j <= i; j ++){
-                tabDiagNOSE[i][j] = jetonsEnDiagNOSEL[i-j];
-            }
-        }
-        // NO - SE - C
-        for (int i = 0; i < 8 ; i++){
-            int temp= 0;
-            int r = 0;
-            for (int j = i ; j < 8; j++){
-                if(grid[r][j]==2||grid[r][j]==4){
-                    temp++;
-                }
-                r++;
-            }
-            jetonsEnDiagNOSEC[i]=temp;
-        }
-        //fill tab
-        for(int i = 0; i < 8 ; i++){
-            for (int j = i; j < 8; j++){
-                tabDiagNOSE[i][j] = jetonsEnDiagNOSEC[j-i];
-            }
-        }
+            if (jetonsAdversesDansLigne != 0){
 
-        // SO - NE - C
-        for (int i = 0; i < 8 ; i++){
-            int temp = 0;
-            int r = i;
-            for (int j = 0 ; j <= i ; j++){
-                if(grid[j][r]==2||grid[j][r]==4){
-                    temp++;
-                }
-                r--;
             }
-            jetonsEnDiagSONEC[i]=temp;
-        }
-        
-        // fill tab
-        for(int i = 0; i < 8 ; i++){
-            for (int j = 0; j <= i; j++){
-                tabDiagSONE[j][i - j] = jetonsEnDiagSONEC[i];
-            }
-        }
+            jetonsTotauxDansLigne = (bitBoardAllie | bitBoardAdverse) & Masks.getMask(premiereCaseDansLigne, Masks.N_S);
+            
 
 
-        // SO - NE - L
-        for (int i = 0; i < 8 ; i++){
-            int temp = 0;
-            int r = i;
-            for (int j = 7 ; j >= i; j--){
-                if(grid[r][j]==2||grid[r][j]==4){
-                    temp++;
-                }
-                r++;
-            }
-            jetonsEnDiagSONEL[i]=temp;
         }
 
-        // fill tab
-        for(int i = 0; i < 8 ; i++){
-            for (int j = 0; i + j < 8; j++){
-                tabDiagSONE[i + j][7 - j] = jetonsEnDiagSONEL[i];
-            }
-        } 
-        
-        
-        // Lines and columns
-        for (int r = 0; r < 8; r++){
-            for (int c = 0; c < 8; c++){
-                if(grid[r][c]==2||grid[r][c]==4){
-                    jetonsEnLigne[r]++;
-                    jetonsEnColonne[c]++;
+        for (int i = 0; i < BIT_BOARD_LENGTH; i++) {
+            if (((bitBoardAllie >>> i) & 0b1) == 1) {
+                
+                for (int k = 0; k < 5; k++) {
+
                 }
             }
         }
+         // Pour chaque direction possible                            
+         //jetons sur la direction
+                                // Check si il y a des jetons adverses en chemin;
+// si chemin jusqu'à (pos + jetonsSurLaDirection) est libre (pas de jetons adverses) 
+                                // et si l'emplacement d'arrivée ne depasse pas l'échiquier
+                                // et si l'emplacement d'arrivée n'est pas un jeton allié
+                                                                    // si emplacement d'arrivée a un jeton adverse, on l'enlève.
+                                    //creer enfant, determiner parent, ajouter a la liste, attribuer last move
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -396,6 +374,20 @@ public class GameInstance {
         }
     }
 
+    /**
+     * Méthode permettant de compter le nombre de bits à 1 dans un long utilisant 
+     * l'algorithme de Brian Kernighan.
+     */
+    public int countJetonsDansLigne(long jetonsDansLigne) {
+        int count = 0;
+
+        while (jetonsDansLigne > 0) {
+            jetonsDansLigne &= (jetonsDansLigne - 1);
+            count++;
+        }
+        return count;
+    }
+
     public int[][] getGrid() {
         return this.grid;
     }
@@ -435,4 +427,254 @@ public class GameInstance {
     public String getLastMoveString(){
         return this.lastMove;
     }
+
+    // TO DO
+    // genere la liste des echiquiers possibles a partir du plateau courant
+    // (generateMovements)
+//     public void generateChildren() {
+//         int jetonAllieID;
+//         int jetonAdverseID;
+        
+//         // A qui est le tour - On attribue les jetons au joueur en cours
+//         int nbAdverses;
+//         if(this.tourDeBlanc){
+//             jetonAllieID = 4;
+//             jetonAdverseID = 2;
+//             nbAdverses = nbNoirs;
+//         }
+//         else {
+//             jetonAllieID = 2;
+//             jetonAdverseID = 4;
+//             nbAdverses = nbBlancs;
+//         }
+
+//         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//         //Jetons dans chaque ligne et chaque diagonale
+//         int[] jetonsEnLigne = new int[8];
+//         int[] jetonsEnColonne = new int[8];
+
+
+//         // NOSE = Nord Ouest à Sud Est et SONE = Sud Ouest à Nord Est // L = ligne C = Colonne
+//         int[] jetonsEnDiagNOSEL = new int[8];
+//         int[] jetonsEnDiagSONEL = new int[8];
+//         int[] jetonsEnDiagNOSEC = new int[8];
+//         int[] jetonsEnDiagSONEC = new int[8];
+//         int[][] tabDiagNOSE = new int[8][8];
+//         int[][] tabDiagSONE = new int[8][8];
+
+
+//         // NO - SE - L  
+//         for (int i = 0; i < 8 ; i++){
+//             int temp= 0;
+//             int c = 0;
+//             for (int j = i ; j < 8; j++){
+//                 if(grid[j][c]==2||grid[j][c]==4){
+//                     temp++;
+//                 }
+//                 c++;
+//             }
+//             jetonsEnDiagNOSEL[i]=temp;
+//         }
+//         // fill tab
+//         for(int i = 0; i < 8 ; i++){
+//             for (int j = 0; j <= i; j ++){
+//                 tabDiagNOSE[i][j] = jetonsEnDiagNOSEL[i-j];
+//             }
+//         }
+//         // NO - SE - C
+//         for (int i = 0; i < 8 ; i++){
+//             int temp= 0;
+//             int r = 0;
+//             for (int j = i ; j < 8; j++){
+//                 if(grid[r][j]==2||grid[r][j]==4){
+//                     temp++;
+//                 }
+//                 r++;
+//             }
+//             jetonsEnDiagNOSEC[i]=temp;
+//         }
+//         //fill tab
+//         for(int i = 0; i < 8 ; i++){
+//             for (int j = i; j < 8; j++){
+//                 tabDiagNOSE[i][j] = jetonsEnDiagNOSEC[j-i];
+//             }
+//         }
+
+//         // SO - NE - C
+//         for (int i = 0; i < 8 ; i++){
+//             int temp = 0;
+//             int r = i;
+//             for (int j = 0 ; j <= i ; j++){
+//                 if(grid[j][r]==2||grid[j][r]==4){
+//                     temp++;
+//                 }
+//                 r--;
+//             }
+//             jetonsEnDiagSONEC[i]=temp;
+//         }
+        
+//         // fill tab
+//         for(int i = 0; i < 8 ; i++){
+//             for (int j = 0; j <= i; j++){
+//                 tabDiagSONE[j][i - j] = jetonsEnDiagSONEC[i];
+//             }
+//         }
+
+
+//         // SO - NE - L
+//         for (int i = 0; i < 8 ; i++){
+//             int temp = 0;
+//             int r = i;
+//             for (int j = 7 ; j >= i; j--){
+//                 if(grid[r][j]==2||grid[r][j]==4){
+//                     temp++;
+//                 }
+//                 r++;
+//             }
+//             jetonsEnDiagSONEL[i]=temp;
+//         }
+
+//         // fill tab
+//         for(int i = 0; i < 8 ; i++){
+//             for (int j = 0; i + j < 8; j++){
+//                 tabDiagSONE[i + j][7 - j] = jetonsEnDiagSONEL[i];
+//             }
+//         } 
+        
+        
+//         // Lines and columns
+//         for (int r = 0; r < 8; r++){
+//             for (int c = 0; c < 8; c++){
+//                 if(grid[r][c]==2||grid[r][c]==4){
+//                     jetonsEnLigne[r]++;
+//                     jetonsEnColonne[c]++;
+//                 }
+//             }
+//         }
+
+// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+//         // pour chaque jeton du joueur actuel
+//         for (int r = 0; r < 8; r++){
+//             for (int c = 0; c < 8; c++){
+//                 if (grid[r][c] == jetonAllieID){
+//                     int[] dirX;
+//                     int[] dirY;
+//                     if (c <= 0) {
+//                         dirX = new int[] { 0, 1 };
+//                     } else if (c < 7) {
+//                         dirX = new int[] { -1, 0, 1 };
+//                     } else {
+//                         dirX = new int[] { -1, 0 };
+//                     }
+
+//                     if (r <= 0) {
+//                         dirY = new int[] { 0, 1 };
+//                     } else if (r < 7) {
+//                         dirY = new int[] { -1, 0, 1 };
+//                     } else {
+//                         dirY = new int[] { -1, 0 };
+//                     }
+//                     int jetonsSurLaDirection = -2000;
+//                     String directionChoisie = "aucune";
+//                     // Pour chaque direction possible
+//                     for (int i = 0; i < dirX.length; i++) {
+//                         for (int j = 0; j < dirY.length; j++) {
+//                             int dirx = dirX[i];
+//                             int diry = dirY[j];
+
+//                             System.out.println("dirX: " + dirX[i] + " dirY: " + dirY[j]);
+//                             //jetons sur la direction
+//                             if(!(dirX[i]==0 && dirY[j] == 0)){
+//                                 if ((dirX[i]==1 || dirX[i]==-1) && dirY[j] == 0){
+//                                     jetonsSurLaDirection = jetonsEnLigne[r];
+//                                     directionChoisie="Direction : O-E";
+//                                 }
+//                                 else if ((dirY[j]==1 || dirY[j]==-1) && dirX[i] == 0){
+//                                     jetonsSurLaDirection = jetonsEnColonne[c];
+//                                     directionChoisie="Direction : N-S";
+//                                 }
+//                                 else if ((dirX[i]==1 && dirY[j] == 1) || (dirX[i]==-1 && dirY[j]==-1)){
+//                                     jetonsSurLaDirection = tabDiagSONE[r][c];
+//                                     directionChoisie="Direction : SO-NE";
+//                                 }
+//                                 else if ((dirX[i]==1 && dirY[j] == -1) || (dirX[i]==-1 && dirY[j]==1)){
+//                                     jetonsSurLaDirection = tabDiagNOSE[r][c];
+//                                     directionChoisie="Direction : NO-SE";
+
+//                                 }
+//                                 else {
+//                                 System.out.println("Something's wrong...");
+//                                 }
+//                                 System.out.println("Piece: R" + r + " C" + c +" " + directionChoisie + " Jetons en ligne: "+ jetonsSurLaDirection);
+
+//                                 boolean cheminLibre = true;
+//                                 // Check si il y a des jetons adverses en chemin;
+//                                 int newX;
+//                                 int newY;
+//                                 int step = 0;
+//                                 do {
+//                                     newX = c + dirX[i]* step;
+//                                     newY = r + dirY[j]* step;
+//                                     if (grid[newY][newX] == jetonAdverseID){
+//                                         cheminLibre = false;
+//                                     }
+//                                     step++;
+//                                 }
+//                                 while (
+//                                     (step < jetonsSurLaDirection) && 
+//                                     (newX < 8) &&
+//                                     (newX >= 0) &&
+//                                     (newY < 8) &&
+//                                     (newY >= 0)
+//                                 );
+                        
+//                                 // si chemin jusqu'à (pos + jetonsSurLaDirection) est libre (pas de jetons adverses) 
+//                                 // et si l'emplacement d'arrivée ne depasse pas l'échiquier
+//                                 // et si l'emplacement d'arrivée n'est pas un jeton allié
+//                                 newX+= dirX[i];
+//                                 newY+= dirY[j];
+//                                 if(
+//                                     cheminLibre && 
+//                                     (newX < 8) &&
+//                                     (newX >= 0) &&
+//                                     (newY < 8) &&
+//                                     (newY >= 0) &&
+//                                     grid[newY][newX] != jetonAllieID
+//                                 ){
+//                                     int newNbBlancs = nbBlancs;
+//                                     int newNbNoirs = nbNoirs;
+//                                     // si emplacement d'arrivée a un jeton adverse, on l'enlève.
+//                                     if (grid[newY][newX]==jetonAdverseID){
+//                                         if(tourDeBlanc){
+//                                             newNbNoirs--;
+//                                             Jnoir.retraitJeton(newX,newY);
+//                                         }
+//                                         else {
+//                                             newNbBlancs--;
+//                                             Jblanc.retraitJeton(newX,newY);
+//                                         }
+//                                     }
+//                                     //creer enfant, determiner parent, ajouter a la liste, attribuer last move
+//                                     int[][] childGrid = new int [8][8];
+//                                     for(int k = 0; k < 8 ; k++){
+//                                         childGrid[k] = grid[k].clone();
+//                                     }
+//                                     childGrid[r][c] = 0;
+//                                     childGrid[newY][newX] = jetonAllieID;
+//                                     System.out.println("New GameInstance created\n");
+//                                     GameInstance enfant = new GameInstance(childGrid, !tourDeBlanc, this, newNbBlancs, newNbNoirs, generateLastMove(r, c, newX, newY));
+//                                     children.add(enfant);
+                                    
+//                                 }
+//                             }
+                            
+//                         }
+//                     }
+//                 }
+//             }            
+//         }
+//     }
 }
