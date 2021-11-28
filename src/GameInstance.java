@@ -358,40 +358,40 @@ public class GameInstance {
 
                                 boolean cheminLibre = true;
                                 // Check si il y a des jetons adverses en chemin;
-                                int newX;
                                 int newY;
+                                int newX;
                                 int step = 0;
                                 do {
-                                    newX = c + dirX[i] * step;
-                                    newY = r + dirY[j] * step;
-                                    if (newY < 8 && newY >= 0 && newX < 8 && newX >= 0) {
-                                        if (grid[newY][newX] == jetonAdverseID) {
+                                    newY = c + dirX[i] * step;
+                                    newX = r + dirY[j] * step;
+                                    if (newX < 8 && newX >= 0 && newY < 8 && newY >= 0) {
+                                        if (grid[newX][newY] == jetonAdverseID) {
                                             cheminLibre = false;
                                         }
                                         step++;
                                     }
                                 } while ((step < jetonsSurLaDirection) &&
-                                        (newX < 8) &&
-                                        (newX >= 0) &&
                                         (newY < 8) &&
-                                        (newY >= 0) && cheminLibre);
+                                        (newY >= 0) &&
+                                        (newX < 8) &&
+                                        (newX >= 0) && cheminLibre);
 
                                 // si chemin jusqu'à (pos + jetonsSurLaDirection) est libre (pas de jetons
                                 // adverses)
                                 // et si l'emplacement d'arrivée ne depasse pas l'échiquier
                                 // et si l'emplacement d'arrivée n'est pas un jeton allié
-                                newX += dirX[i];
-                                newY += dirY[j];
+                                newY += dirX[i];
+                                newX += dirY[j];
                                 if (cheminLibre &&
-                                        (newX < 8) &&
-                                        (newX >= 0) &&
                                         (newY < 8) &&
                                         (newY >= 0) &&
-                                        grid[newY][newX] != jetonAllieID) {
+                                        (newX < 8) &&
+                                        (newX >= 0) &&
+                                        grid[newX][newY] != jetonAllieID) {
                                     int newNbBlancs = nbBlancs;
                                     int newNbNoirs = nbNoirs;
                                     // si emplacement d'arrivée a un jeton adverse, on l'enlève.
-                                    if (grid[newY][newX] == jetonAdverseID) {
+                                    if (grid[newX][newY] == jetonAdverseID) {
                                         if (tourDeBlanc) {
                                             newNbNoirs--;
                                             Jnoir.retraitJeton(newX, newY);
@@ -406,7 +406,7 @@ public class GameInstance {
                                         childGrid[k] = grid[k].clone();
                                     }
                                     childGrid[r][c] = 0;
-                                    childGrid[newY][newX] = jetonAllieID;
+                                    childGrid[newX][newY] = jetonAllieID;
                                     GameInstance enfant = new GameInstance(childGrid, !tourDeBlanc, newNbBlancs,
                                             newNbNoirs, generateLastMove(r, c, newX, newY));
 
@@ -439,7 +439,9 @@ public class GameInstance {
     }
 
     private String generateLastMove(int r1, int c1, int r2, int c2) {
-        return "" + (char) (65 + c1) + (8 - r1) + (char) (65 + c2) + (8 - r2);
+        return " " + 
+        "Start R" + r1 + "C" + c1 + "\nEnd R"+ r2 + "C" + c2
+        + "\n" + (char) (65 + c1) + (8 - r1) + (char) (65 + c2) + (8 - r2);
     }
 
     public String getLastMoveString() {
