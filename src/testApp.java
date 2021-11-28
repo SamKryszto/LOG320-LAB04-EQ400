@@ -57,9 +57,9 @@ public class testApp {
         GameInstance gameInit = new GameInstance();
         int[][] gridTest = new int[][] { { 0, 2, 2, 2, 2, 2, 2, 0 }, { 4, 0, 0, 0, 0, 0, 0, 4 },
                 { 4, 0, 0, 0, 0, 0, 0, 4 },
-                { 4, 0, 0, 0, 0, 0, 0, 4 }, { 4, 0, 0, 0, 0, 0, 0, 4 }, { 4, 0, 0, 0, 0, 0, 0, 4 },
+                { 4, 0, 0, 0, 0, 0, 0, 4 }, { 4, 0, 0, 0, 0, 0, 0, 4 }, { 4, 0, 0, 0, 0, 4, 0, 0 },
                 { 4, 0, 0, 0, 0, 0, 0, 4 }, { 0, 2, 2, 2, 2, 2, 2, 0 } };
-        GameInstance gameTest = new GameInstance(gridTest, true, 1, 0, null);
+        GameInstance gameTest = new GameInstance(gridTest, false, null);
         gameTest.generateChildren();
         // printGrid(gameTest.getGrid());
         ArrayList<GameInstance> children = gameTest.getChildren();

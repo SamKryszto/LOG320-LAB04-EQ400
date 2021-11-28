@@ -3,7 +3,7 @@ import java.util.ArrayList;
 public class GameInstance {
 
     // liste des possibilités d'échiquier à partir des positions actuelles
-    private static ArrayList<GameInstance> children;
+    private ArrayList<GameInstance> children;
     private boolean tourDeBlanc; // true = blanc , false = noir
     private boolean gameOver;
     private int[][] grid;
@@ -28,7 +28,6 @@ public class GameInstance {
         this.lastMove = "ERROR : First move";
         this.children = new ArrayList<GameInstance>();
         setJoueurJeton(grid);
-        rate();
         // A revoir: quand generer les enfants?
     }
 
@@ -47,21 +46,30 @@ public class GameInstance {
         this.grid = grid;
     }
 
-    public GameInstance(int[][] grid, boolean tourDeBlanc, int nbBlancs, int nbNoirs, String lastMove) {
+    public GameInstance(int[][] grid, boolean tourDeBlanc, String lastMove) {
         this.grid = grid;
         this.tourDeBlanc = tourDeBlanc;
-        this.nbBlancs = nbBlancs;
-        this.nbNoirs = nbNoirs;
         this.lastMove = lastMove;
         this.Jblanc = new Joueur(true, new ArrayList<Jeton>());
         this.Jnoir = new Joueur(false, new ArrayList<Jeton>());
+        this.children = new ArrayList<GameInstance>();
         setJoueurJeton(grid);
-        rate();
-        // rate();
-        // verifie si la partie est terminée et genere les enfants sinon
-        if (!gameOver) {
-            // A revoir: quand generer les enfants?
-        }
+        this.nbBlancs = Jblanc.getListeJeton().size();
+        this.nbNoirs = Jblanc.getListeJeton().size();
+
+        /**
+         * switch (calculVictoire()) {
+         * case 0:
+         * // Rien
+         * case 1: // Victoire blanc
+         * this.score = 1000;
+         * this.gameOver = true;
+         * case 2: // Victoire noir
+         * this.score = -1000;
+         * this.gameOver = true;
+         * }
+         */
+
     }
 
     public void setJoueurJeton(int[][] grid) {
@@ -127,18 +135,22 @@ public class GameInstance {
         rate = maxBlanc - maxNoir;
 
         this.score = rate;
+
     }
 
-    public void calculVictoire(int joueur, int row, int col) {
-        if (joueur == 4) {
-            if (nbPieceConnecte(joueur, row, col, new boolean[8][8]) == nbBlancs) {
-                System.out.println("Victoire du joueur blanc !");
-            }
-        } else if (joueur == 2) {
-            if (nbPieceConnecte(joueur, row, col, new boolean[8][8]) == nbNoirs) {
-                System.out.println("Victoire du joueur noir !");
-            }
+    public int calculVictoire() {
+
+        if (nbPieceConnecte(4, Jblanc.getListeJeton().get(0).getPosX(), Jblanc.getListeJeton().get(0).getPosY(),
+                new boolean[8][8]) == nbBlancs) {
+            return 1;
         }
+
+        if (nbPieceConnecte(2, Jnoir.getListeJeton().get(0).getPosX(), Jnoir.getListeJeton().get(0).getPosY(),
+                new boolean[8][8]) == nbNoirs) {
+            return 2;
+        }
+
+        return 0;
     }
 
     public int nbPieceConnecte(int joueur, int row, int col, boolean[][] verifiedGrid) {
@@ -407,8 +419,8 @@ public class GameInstance {
                                     }
                                     childGrid[r][c] = 0;
                                     childGrid[newX][newY] = jetonAllieID;
-                                    GameInstance enfant = new GameInstance(childGrid, !tourDeBlanc, newNbBlancs,
-                                            newNbNoirs, generateLastMove(r, c, newX, newY));
+                                    GameInstance enfant = new GameInstance(childGrid, !tourDeBlanc,
+                                            generateLastMove(r, c, newX, newY));
 
                                     children.add(enfant);
 
@@ -439,9 +451,7 @@ public class GameInstance {
     }
 
     private String generateLastMove(int r1, int c1, int r2, int c2) {
-        return " " + 
-        "Start R" + r1 + "C" + c1 + "\nEnd R"+ r2 + "C" + c2
-        + "\n" + (char) (65 + c1) + (8 - r1) + (char) (65 + c2) + (8 - r2);
+        return " " + (char) (65 + c1) + (8 - r1) + (char) (65 + c2) + (8 - r2);
     }
 
     public String getLastMoveString() {
@@ -455,10 +465,22 @@ public class GameInstance {
         for (int i = 0; i < children.size(); i++) {
             if (children.get(i).getScore() == score) {
                 child = children.get(i);
-                System.out.println(child.getLastMoveString());
+                break;
             }
         }
-        System.out.println(child.getLastMoveString());
         return child.getLastMoveString();
+    }
+
+    // temp
+    public boolean compareGrids(int[][] gridToCompare) {
+        boolean same = true;
+        for (int i = 0; i < grid.length; i++) {
+            for (int j = 0; j < grid[i].length; j++) {
+                if (this.grid[i][j] != gridToCompare[i][j]) {
+                    same = false;
+                }
+            }
+        }
+        return same;
     }
 }
