@@ -11,10 +11,10 @@ public class testApp {
                 { 4, 0, 0, 0, 2, 0, 0, 4 }, { 4, 2, 0, 0, 0, 0, 0, 4 }, { 4, 0, 2, 4, 0, 0, 0, 0 },
                 { 0, 0, 4, 2, 0, 0, 0, 4 }, { 0, 2, 0, 0, 2, 2, 2, 0 } };
 
-        testFonctionFindSquare(new GameInstance());
+        // testFonctionFindSquare(new GameInstance());
         testGenerateChildren();
         // testFindJetonsInARow(gridRando);
-        testFonctionEval(new GameInstance());
+        // testFonctionEval(new GameInstance());
         // testMinimax();
 
     }
@@ -46,7 +46,7 @@ public class testApp {
         gameInstance.setGrid(grid);
         gameInstance.setJoueurJeton(grid);
 
-        gameInstance.rate();
+        // gameInstance.rate();
 
         int a = gameInstance.getScore();
         System.out.println("Score : " + a);
@@ -58,20 +58,25 @@ public class testApp {
         int[][] gridTest = new int[][] {
                 { 0, 0, 0, 0, 0, 0, 0, 0 },
                 { 0, 0, 0, 0, 0, 0, 0, 0 },
-                { 0, 4, 0, 0, 0, 0, 0, 0 },
                 { 0, 0, 0, 0, 0, 0, 0, 0 },
-                { 0, 0, 0, 0, 0, 0, 0, 0 },
-                { 0, 0, 0, 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 2, 2, 4, 0, 0 },
+                { 0, 0, 0, 0, 2, 4, 0, 0 },
+                { 0, 0, 0, 0, 0, 4, 0, 0 },
                 { 0, 0, 0, 0, 0, 0, 0, 0 },
                 { 0, 0, 0, 0, 0, 0, 0, 0 } };
         GameInstance gameTest = new GameInstance(gridTest, true, 1, 0, null);
         gameTest.generateChildren();
         // printGrid(gameTest.getGrid());
         ArrayList<GameInstance> children = gameTest.getChildren();
+        System.out.println("Size :" + children.size());
         for (int i = 0; i < children.size(); i++) {
             System.out.println(children.get(i).getLastMoveString());
+            System.out.println("Score : " + children.get(i).getScore());
             printGrid(children.get(i).getGrid());
         }
+
+        // String a = app.getBestMoveWithTimeAllowed(gameTest);
+        // System.out.println("Best Move : " + a);
     }
 
     public static void testFindJetonsInARow(int[][] grid) {

@@ -27,6 +27,8 @@ public class GameInstance {
         this.Jnoir = new Joueur(false, new ArrayList<Jeton>());
         this.lastMove = "ERROR : First move";
         this.children = new ArrayList<GameInstance>();
+        setJoueurJeton(grid);
+        rate();
         // A revoir: quand generer les enfants?
     }
 
@@ -51,7 +53,10 @@ public class GameInstance {
         this.nbBlancs = nbBlancs;
         this.nbNoirs = nbNoirs;
         this.lastMove = lastMove;
-        this.children = new ArrayList<GameInstance>();
+        this.Jblanc = new Joueur(true, new ArrayList<Jeton>());
+        this.Jnoir = new Joueur(false, new ArrayList<Jeton>());
+        setJoueurJeton(grid);
+        rate();
         // rate();
         // verifie si la partie est terminée et genere les enfants sinon
         if (!gameOver) {
@@ -117,9 +122,10 @@ public class GameInstance {
                 }
             }
         }
-        System.out.println("N: " + maxNoir);
-        System.out.println("B: " + maxBlanc);
-        rate = maxNoir - maxBlanc;
+
+        // Blanc doit toujours avec le plus de + grand nombre et noir le plus petit
+        rate = maxBlanc - maxNoir;
+
         this.score = rate;
     }
 
@@ -328,7 +334,7 @@ public class GameInstance {
                             int dirx = dirX[i];
                             int diry = dirY[j];
 
-                            System.out.println("dirX: " + dirX[i] + " dirY: " + dirY[j]);
+                            // System.out.println("dirX: " + dirX[i] + " dirY: " + dirY[j]);
                             // jetons sur la direction
                             if (!(dirX[i] == 0 && dirY[j] == 0)) {
                                 if ((dirX[i] == 1 || dirX[i] == -1) && dirY[j] == 0) {
@@ -337,18 +343,18 @@ public class GameInstance {
                                 } else if ((dirY[j] == 1 || dirY[j] == -1) && dirX[i] == 0) {
                                     jetonsSurLaDirection = jetonsEnColonne[c];
                                     directionChoisie = "Direction : N-S";
-                                } else if ((dirX[i] == 1 && dirY[j] == 1) || (dirX[i] == -1 && dirY[j] == -1)) {
+                                } else if ((dirX[i] == -1 && dirY[j] == 1) || (dirX[i] == 1 && dirY[j] == -1)) {
                                     jetonsSurLaDirection = tabDiagSONE[r][c];
                                     directionChoisie = "Direction : SO-NE";
-                                } else if ((dirX[i] == 1 && dirY[j] == -1) || (dirX[i] == -1 && dirY[j] == 1)) {
+                                } else if ((dirX[i] == -1 && dirY[j] == -1) || (dirX[i] == 1 && dirY[j] == 1)) {
                                     jetonsSurLaDirection = tabDiagNOSE[r][c];
                                     directionChoisie = "Direction : NO-SE";
 
                                 } else {
                                     System.out.println("Something's wrong...");
                                 }
-                                System.out.println("Piece: R" + r + " C" + c + " " + directionChoisie
-                                        + " Jetons en ligne: " + jetonsSurLaDirection);
+                                // System.out.println("Piece: R" + r + " C" + c + " " + directionChoisie
+                                // + " Jetons en ligne: " + jetonsSurLaDirection);
 
                                 boolean cheminLibre = true;
                                 // Check si il y a des jetons adverses en chemin;
@@ -358,15 +364,20 @@ public class GameInstance {
                                 do {
                                     newX = c + dirX[i] * step;
                                     newY = r + dirY[j] * step;
-                                    if (grid[newY][newX] == jetonAdverseID) {
-                                        cheminLibre = false;
+                                    System.out.println("Origine" + r + "-" + c);
+                                    System.out.println("Destination" + newY + "-" + newX);
+                                    if (newY < 8 && newY >= 0 && newX < 8 && newX >= 0) {
+                                        if (grid[newY][newX] == jetonAdverseID) {
+                                            cheminLibre = false;
+                                            System.out.println("Bloqué");
+                                        }
+                                        step++;
                                     }
-                                    step++;
                                 } while ((step < jetonsSurLaDirection) &&
                                         (newX < 8) &&
                                         (newX >= 0) &&
                                         (newY < 8) &&
-                                        (newY >= 0));
+                                        (newY >= 0) && cheminLibre);
 
                                 // si chemin jusqu'à (pos + jetonsSurLaDirection) est libre (pas de jetons
                                 // adverses)
@@ -399,9 +410,9 @@ public class GameInstance {
                                     }
                                     childGrid[r][c] = 0;
                                     childGrid[newY][newX] = jetonAllieID;
-                                    System.out.println("New GameInstance created\n");
                                     GameInstance enfant = new GameInstance(childGrid, !tourDeBlanc, newNbBlancs,
                                             newNbNoirs, generateLastMove(r, c, newX, newY));
+
                                     children.add(enfant);
 
                                 }
@@ -426,8 +437,12 @@ public class GameInstance {
         this.score = score;
     }
 
+    public boolean getTurn() {
+        return tourDeBlanc;
+    }
+
     private String generateLastMove(int r1, int c1, int r2, int c2) {
-        return "" + (char) (65 + c1) + (r1 + 1) + (char) (65 + c2) + (r2 + 1);
+        return "" + (char) (65 + c1) + (8 - r1) + (char) (65 + c2) + (8 - r2);
     }
 
     public String getLastMoveString() {
@@ -436,11 +451,14 @@ public class GameInstance {
 
     public String getNextMove(int score) {
         GameInstance child = null;
+        System.out.println("Size : " + children.size());
+        System.out.println("Score : " + score);
         for (int i = 0; i < children.size(); i++) {
             if (children.get(i).getScore() == score) {
                 child = children.get(i);
             }
         }
+        System.out.println(child.getLastMoveString());
         return child.getLastMoveString();
     }
 }
