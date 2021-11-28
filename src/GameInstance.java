@@ -14,10 +14,9 @@ public class GameInstance {
 
     // liste des possibilités d'échiquier à partir des positions actuelles
     private ArrayList<GameInstance> children;
-    private boolean tourDeBlanc; //true = blanc , false = noir
-    private boolean gameOver;
-    private int depth;
     private GameInstance parent;
+    private boolean tourDeBlanc; // true = blanc , false = noir
+    private boolean gameOver;
     private int[][] grid;
     private int nbNoirs;
     private int nbBlancs;
@@ -48,36 +47,49 @@ public class GameInstance {
         this.Jnoir = new Joueur(false, new ArrayList<Jeton>());
         this.lastMove = "ERROR : First move";
         this.children = new ArrayList<GameInstance>();
+        setJoueurJeton(grid);
         // A revoir: quand generer les enfants?
     }
 
-    //temp
-    /* 
-    public GameInstance(GameInstance parent, ArrayList<GameInstance> children, int score, int depth){
-        this.parent = parent;
-        this.children = children;
-        this.score = score;
-        this.depth = depth;
-    }
-    */
+    // temp
+    /*
+     * public GameInstance(GameInstance parent, ArrayList<GameInstance> children,
+     * int score, int depth){
+     * this.parent = parent;
+     * this.children = children;
+     * this.score = score;
+     * this.depth = depth;
+     * }
+     */
 
     public void setGrid(int[][] grid) {
         this.grid = grid;
     }
 
-    public GameInstance(int[][] grid, boolean tourDeBlanc, GameInstance parent, int nbBlancs, int nbNoirs, String lastMove) {
+    public GameInstance(int[][] grid, boolean tourDeBlanc, String lastMove) {
         this.grid = grid;
         this.tourDeBlanc = tourDeBlanc;
-        this.parent = parent;
-        this.nbBlancs = nbBlancs;
-        this.nbNoirs = nbNoirs;
         this.lastMove = lastMove;
+        this.Jblanc = new Joueur(true, new ArrayList<Jeton>());
+        this.Jnoir = new Joueur(false, new ArrayList<Jeton>());
         this.children = new ArrayList<GameInstance>();
-        //rate();
-        // verifie si la partie est terminée et genere les enfants sinon
-        if (!gameOver) {
-           // A revoir: quand generer les enfants?
-        }
+        setJoueurJeton(grid);
+        this.nbBlancs = Jblanc.getListeJeton().size();
+        this.nbNoirs = Jblanc.getListeJeton().size();
+
+        /**
+         * switch (calculVictoire()) {
+         * case 0:
+         * // Rien
+         * case 1: // Victoire blanc
+         * this.score = 1000;
+         * this.gameOver = true;
+         * case 2: // Victoire noir
+         * this.score = -1000;
+         * this.gameOver = true;
+         * }
+         */
+
     }
 
     public GameInstance(long bitBoardBlancs, long bitBoardNoirs, boolean tourDeBlanc, GameInstance parent, int nbBlancs, int nbNoirs, String lastMove) {
@@ -122,7 +134,7 @@ public class GameInstance {
     // le joueur a gagné
     // Idée: +1 pour chaque jeton collé de maxPlayer et -1 pour chaque jeton collé
     // de l'autre #
-    public int rate() {
+    public void rate() {
         this.gameOver = false;
         int rate = 0;
         ArrayList<Jeton> listeJetonNoir = Jnoir.getListeJeton();
@@ -142,21 +154,39 @@ public class GameInstance {
                 maxBlanc = nbPieceB;
             }
         }
-
-        rate = maxNoir - maxBlanc;
-        return rate;
-    }
-
-    public void calculVictoire(int joueur, int row, int col) {
-        if (joueur == 4) {
-            if (nbPieceConnecte(joueur, row, col, new boolean[8][8]) == nbBlancs) {
-                System.out.println("Victoire du joueur blanc !");
-            }
-        } else if (joueur == 2) {
-            if (nbPieceConnecte(joueur, row, col, new boolean[8][8]) == nbNoirs) {
-                System.out.println("Victoire du joueur noir !");
+        for (int i = 0; i < grid.length; i++) {
+            for (int j = 0; j < grid[i].length; j++) {
+                int tempN = calculSquare(2, i, j);
+                int tempB = calculSquare(4, i, j);
+                if (tempN >= 4) {
+                    maxNoir++;
+                }
+                if (tempB >= 4) {
+                    maxBlanc++;
+                }
             }
         }
+
+        // Blanc doit toujours avec le plus de + grand nombre et noir le plus petit
+        rate = maxBlanc - maxNoir;
+
+        this.score = rate;
+
+    }
+
+    public int calculVictoire() {
+
+        if (nbPieceConnecte(4, Jblanc.getListeJeton().get(0).getPosX(), Jblanc.getListeJeton().get(0).getPosY(),
+                new boolean[8][8]) == nbBlancs) {
+            return 1;
+        }
+
+        if (nbPieceConnecte(2, Jnoir.getListeJeton().get(0).getPosX(), Jnoir.getListeJeton().get(0).getPosY(),
+                new boolean[8][8]) == nbNoirs) {
+            return 2;
+        }
+
+        return 0;
     }
 
     public int nbPieceConnecte(int joueur, int row, int col, boolean[][] verifiedGrid) {
@@ -175,6 +205,32 @@ public class GameInstance {
 
     }
 
+    public int findSquare(int joueur, int row, int col) {
+        if (row < 0 || row > 7 || col < 0 || col > 7 || grid[row][col] != joueur) {
+            return 0;
+        }
+
+        return 1;
+
+    }
+
+    public int calculSquare(int joueur, int row, int col) {
+
+        if (findSquare(joueur, row, col) == 1) {
+            if (findSquare(joueur, row, col + 1) == 1) {
+                if (findSquare(joueur, row + 1, col + 1) == 1) {
+                    if (findSquare(joueur, row + 1, col) == 1) {
+                        return 4;
+                    }
+                    return 3;
+                }
+                return 2;
+            }
+            return 1;
+        }
+        return 0;
+    }
+
     // TO DO
     // genere la liste des echiquiers possibles a partir du plateau courant
     // (generateMovements)
@@ -187,8 +243,6 @@ public class GameInstance {
         int deplacementDansLigne;
         int caseDestination;
         long[] newBitBoards; 
-        int newNbJetonsBlancs = nbBlancs;
-        int newNbJetonsNoirs = nbNoirs;
         int limiteLigne;
         int premiereCaseDansLigne;
         
@@ -753,35 +807,46 @@ public class GameInstance {
     public int getScore() {
         return score;
     }
-    
-    /**
-     * Cette méthode renvoie un String représentant le prochain mouvement de l'algorithme de jeu. 
-     * 
-     * Le mouvement à jouer doit être de format : "C1" + "R1" + "C2" + "R2" où C1 et R1 sont respectivement 
-     * la lettre de colonne et le numéro de rangée initiales du pion à bouger et C2 et R2 sont respectivement 
-     * la lettre de colonne et le numéro de rangée du pion après le mouvement.
-     */
-    public String getNextMove() {
 
-        // À des fins de test, l'algorithme envoie pour l'instant une série de commandes peu stratégiques
-        String nextMove = String.valueOf(column) + row + String.valueOf(column) + (row + 2);
-        if (column != 'H') {
-            column++;
-        }
-        else {
-            column = 'A';
-            row++;
-        }
-        
-
-        return nextMove;
+    public void setScore(int score) {
+        this.score = score;
     }
 
-    private String generateLastMove(int r1, int c1, int r2, int c2){
-        return ""+ (char)(65 + c1) + (r1 + 1) + (char)(65 + c2) + (r2 + 1);
+    public boolean getTurn() {
+        return tourDeBlanc;
     }
 
-    public String getLastMoveString(){
+    private String generateLastMove(int r1, int c1, int r2, int c2) {
+        return " " + (char) (65 + c1) + (8 - r1) + (char) (65 + c2) + (8 - r2);
+    }
+
+    public String getLastMoveString() {
         return this.lastMove;
+    }
+
+    public String getNextMove(int score) {
+        GameInstance child = null;
+        System.out.println("Size : " + children.size());
+        System.out.println("Score : " + score);
+        for (int i = 0; i < children.size(); i++) {
+            if (children.get(i).getScore() == score) {
+                child = children.get(i);
+                break;
+            }
+        }
+        return child.getLastMoveString();
+    }
+
+    // temp
+    public boolean compareGrids(int[][] gridToCompare) {
+        boolean same = true;
+        for (int i = 0; i < grid.length; i++) {
+            for (int j = 0; j < grid[i].length; j++) {
+                if (this.grid[i][j] != gridToCompare[i][j]) {
+                    same = false;
+                }
+            }
+        }
+        return same;
     }
 }
