@@ -492,16 +492,24 @@ public class GameInstance {
     }
 
     public String getNextMove(int score) {
-        GameInstance child = null;
         System.out.println("Size : " + children.size());
         System.out.println("Score : " + score);
+        int bestScore;
+        if(tourDeBlanc) {
+            bestScore = 1000000;
+        }
+        else {
+            bestScore = -1000000;
+        }
         for (int i = 0; i < children.size(); i++) {
-            if (children.get(i).getScore() == score) {
-                child = children.get(i);
-                break;
+            if (children.get(i).getScore() == bestScore){
+                return children.get(i).getLastMoveString();
+            }
+            else if (children.get(i).getScore() == score) {
+                return children.get(i).getLastMoveString();
             }
         }
-        return child.getLastMoveString();
+        return null;
     }
 
     // temp

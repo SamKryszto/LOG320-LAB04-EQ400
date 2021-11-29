@@ -2,7 +2,7 @@ import java.util.ArrayList;
 
 public class testApp {
     public static void main(String[] args) throws Exception {
-        int[][] gridInit = new int[][] { { 0, 2, 2, 2, 2, 2, 2, 0 }, { 4, 0, 0, 0, 0, 0, 0, 4 },
+        int[][] gridInit = new int[][] { { 2, 2, 2, 2, 2, 2, 2, 0 }, { 4, 0, 0, 0, 0, 0, 0, 4 },
                 { 4, 0, 0, 0, 0, 0, 0, 4 },
                 { 4, 0, 0, 0, 0, 0, 0, 4 }, { 4, 0, 0, 0, 0, 0, 0, 4 }, { 4, 0, 0, 0, 0, 0, 0, 4 },
                 { 4, 0, 0, 0, 0, 0, 0, 4 }, { 0, 2, 2, 2, 2, 2, 2, 0 } };

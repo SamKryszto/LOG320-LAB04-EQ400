@@ -14,7 +14,7 @@ public class App {
 	private long timeStart;
 	private long timeDelay = 4950;
 	private int countDepth;
-	private int depth = 4;
+	private int depth = 5;
 
 	/**
 	 * order of operations :
@@ -153,17 +153,19 @@ public class App {
 						board[x2][y2] = 4;
 					}
 					String a = c1 + "" + r1 + "" + c2 + "" + r2;
-					//newInst = new GameInstance(board, isWhite, a);
+					
 					ArrayList<GameInstance> children = newInst.getChildren();
-					boolean found;
+					boolean found = false;
 					for (int i = 0; i < children.size(); i++) {
 						found = children.get(i).compareGrids(board);
 						if (found) {
 							newInst = children.get(i);
+							break;
 
-						} else {
-							newInst = new GameInstance(board, !isWhite, a);
-						}
+						} 
+					}
+					if (!found) {
+						newInst = new GameInstance(board, isWhite, a);
 					}
 					System.out.println("Entrez votre coup : ");
 					String move = null;
@@ -223,9 +225,12 @@ public class App {
 		timeStart = System.currentTimeMillis();
 		int score = 0;
 
-		for(int i = 0; i < depth; i++) { 
-			score = minimax(gameInstance, isMaxPlayer, depth, -100000000, 100000000);
+		for (int i = 0; i < depth; i ++){
+			System.out.println(("depth : " + i));
+			score = minimax(gameInstance, isMaxPlayer, i, -100000000, 100000000);
+			System.out.println("score : " + score);
 		}
+		
 
 		return gameInstance.getNextMove(score);
 	}
@@ -239,40 +244,52 @@ public class App {
 				gameInstance.rate();
 			}
 			return gameInstance.getScore();
-
 		}
+
 		ArrayList<GameInstance> children = gameInstance.getChildren();
+
+		
 		if (children.size() <= 0) {
-			gameInstance.generateChildren();
+		gameInstance.generateChildren();
 		}
 		if (isMaxPlayer) {
 			int maxRating = -1000000000;
-
-			for (int i = 0; i < children.size(); i++) {
-				GameInstance child = children.get(i);
-				int eval = minimax(child, !isMaxPlayer, depth - 1, alpha, beta);
-				maxRating = Math.max(maxRating, eval);
-				gameInstance.setScore(maxRating);
-				alpha = Math.max(eval, alpha);
-				if (beta <= alpha) {
-					break;
+			//for (int i = 1; i < depth; i++) {
+				for (int j = 0; j < children.size(); j++) {
+				
+					GameInstance child = children.get(j);
+					int eval = minimax(child, !isMaxPlayer, depth - 1, alpha, beta);
+					maxRating = Math.max(maxRating, eval);
+					if (gameInstance.getScore() != 1000000){
+						gameInstance.setScore(maxRating);
+					}
+					alpha = Math.max(eval, alpha);
+					if (beta <= alpha) {
+						break;
+					}
 				}
-			}
+			//}
 			return maxRating;
-
+		
 		} else {
 			int minRating = 1000000000;
-			for (int i = 0; i < children.size(); i++) {
-				GameInstance child = children.get(i);
-				int eval = minimax(child, !isMaxPlayer, depth - 1, alpha, beta);
-				minRating = Math.min(minRating, eval);
-				gameInstance.setScore(minRating);
-				beta = Math.min(eval, beta);
-				if (beta <= alpha) {
-					break;
+			//for (int i = 1; i < depth; i++) {
+				for (int j = 0; j < children.size(); j++) {
+				
+					GameInstance child = children.get(j);
+					int eval = minimax(child, !isMaxPlayer, depth - 1, alpha, beta);
+					minRating = Math.min(minRating, eval);
+					if (gameInstance.getScore() != -1000000){
+						gameInstance.setScore(minRating);
+					}
+					beta = Math.min(eval, beta);
+					if (beta <= alpha) {
+						break;
+					}
 				}
-			}
+			//}
 			return minRating;
 		}
+		
 	}
 }
