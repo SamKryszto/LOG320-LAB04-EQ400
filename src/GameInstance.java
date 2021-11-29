@@ -2,6 +2,17 @@ import java.util.ArrayList;
 
 public class GameInstance {
 
+    public static int[][] heatmap = new int[][] { 
+    { 1, 1, 1, 1, 1, 1, 1, 1 },
+    { 1, 2, 2, 2, 2, 2, 2, 1 },
+    { 1, 2, 3, 3, 3, 3, 2, 1 },
+    { 1, 2, 3, 4, 4, 3, 2, 1 },
+    { 1, 2, 3, 4, 4, 3, 2, 1 },
+    { 1, 2, 3, 3, 3, 3, 2, 1 },
+    { 1, 2, 2, 2, 2, 2, 2, 1 },
+    { 1, 1, 1, 1, 1, 1, 1, 1 } 
+};
+
     // liste des possibilités d'échiquier à partir des positions actuelles
     private ArrayList<GameInstance> children;
     private boolean tourDeBlanc; // true = blanc , false = noir
@@ -92,7 +103,9 @@ public class GameInstance {
         int countBlanc = 0;
         ArrayList<Jeton> listeJetonNoir = Jnoir.getListeJeton();
         int maxNoir = 0;
+        int heatScoreNoir = 0;
         for (Jeton j : listeJetonNoir) {
+            heatScoreNoir += heatmap[j.getPosX()][j.getPosY()];
             int nbPieceN = nbPieceConnecte(2, j.getPosX(), j.getPosY(), new boolean[8][8]);
             if (nbPieceN >= 1) {
                 countNoir++;
@@ -102,12 +115,14 @@ public class GameInstance {
             }
         }
 
-        maxNoir = maxNoir - countNoir - 1;
+        maxNoir = 10*(maxNoir - (countNoir - 1)) + heatScoreNoir;
 
         ArrayList<Jeton> listeJetonBlanc = Jblanc.getListeJeton();
         int maxBlanc = 0;
+        int heatScoreBlanc = 0;
         for (Jeton j : listeJetonBlanc) {
             int nbPieceB = nbPieceConnecte(4, j.getPosX(), j.getPosY(), new boolean[8][8]);
+            heatScoreBlanc += heatmap[j.getPosX()][j.getPosY()];
             if (nbPieceB >= 1) {
                 countBlanc++;
             }
@@ -116,7 +131,7 @@ public class GameInstance {
             }
         }
 
-        maxBlanc = maxBlanc - countBlanc - 1;
+        maxBlanc = 10*(maxBlanc - (countBlanc - 1)) + heatScoreBlanc ;
 
         /**
          * for (int i = 0; i < grid.length; i++) {
