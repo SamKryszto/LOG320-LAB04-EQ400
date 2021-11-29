@@ -11,8 +11,10 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 public class App {
 
 	static private boolean isWhite;
-	public long timeStart;
-	public long timeDelay = 4500;
+	private long timeStart;
+	private long timeDelay = 4950;
+	private int countDepth;
+	private int depth = 4;
 
 	/**
 	 * order of operations :
@@ -176,6 +178,7 @@ public class App {
 					} else {
 						board[x2][y2] = 4;
 					}
+					//
 
 					newInst = new GameInstance(board, !isWhite, move);
 
@@ -212,7 +215,8 @@ public class App {
 	public String getBestMoveWithTimeAllowed(GameInstance gameInstance, boolean isMaxPlayer) {
 
 		timeStart = System.currentTimeMillis();
-		int score = minimax(gameInstance, isMaxPlayer, 5, -100000000, 100000000);
+
+		int score = minimax(gameInstance, isMaxPlayer, depth, -100000000, 100000000);
 
 		return gameInstance.getNextMove(score);
 	}
