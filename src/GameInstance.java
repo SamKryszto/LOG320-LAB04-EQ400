@@ -37,8 +37,8 @@ public class GameInstance {
     // Échiquier initial
     public GameInstance() {
         this.tourDeBlanc = true;
-        this.nbBlancs = 8;
-        this.nbNoirs = 8;
+        this.nbBlancs = 12;
+        this.nbNoirs = 12;
         this.grid = new int[][] { { 0, 2, 2, 2, 2, 2, 2, 0 }, { 4, 0, 0, 0, 0, 0, 0, 4 }, { 4, 0, 0, 0, 0, 0, 0, 4 },
                 { 4, 0, 0, 0, 0, 0, 0, 4 }, { 4, 0, 0, 0, 0, 0, 0, 4 }, { 4, 0, 0, 0, 0, 0, 0, 4 },
                 { 4, 0, 0, 0, 0, 0, 0, 4 }, { 0, 2, 2, 2, 2, 2, 2, 0 } };
@@ -75,20 +75,7 @@ public class GameInstance {
         this.children = new ArrayList<GameInstance>();
         setJoueurJeton(grid);
         this.nbBlancs = Jblanc.getListeJeton().size();
-        this.nbNoirs = Jblanc.getListeJeton().size();
-
-        /**
-         * switch (calculVictoire()) {
-         * case 0:
-         * // Rien
-         * case 1: // Victoire blanc
-         * this.score = 1000;
-         * this.gameOver = true;
-         * case 2: // Victoire noir
-         * this.score = -1000;
-         * this.gameOver = true;
-         * }
-         */
+        this.nbNoirs = Jnoir.getListeJeton().size();
 
     }
 
@@ -137,71 +124,140 @@ public class GameInstance {
     public void rate() {
         this.gameOver = false;
         int rate = 0;
-        ArrayList<Jeton> listeJetonNoir = Jnoir.getListeJeton();
+        int countNoir = 0;
+        int countBlanc = 0;
         int maxNoir = 0;
-        for (Jeton j : listeJetonNoir) {
-            int nbPieceN = nbPieceConnecte(2, j.getPosX(), j.getPosY(), new boolean[8][8]);
+        int nbPieceN = 0;
+        int checkVictoire = 0;
+        for (int i = 0; i < 64; i++) {
+            if (((0b1L << i) & bitBoardNoirs) !=0){
+                nbPieceN = nbPieceConnecte(bitBoardNoirs, i, new boolean[64]);
+            }
+            if (nbPieceN >= 1) {
+                countNoir++;
+            }
             if (maxNoir < nbPieceN) {
                 maxNoir = nbPieceN;
             }
         }
 
-        ArrayList<Jeton> listeJetonBlanc = Jblanc.getListeJeton();
+        maxNoir = maxNoir - countNoir - 1;
+
         int maxBlanc = 0;
-        for (Jeton j : listeJetonBlanc) {
-            int nbPieceB = nbPieceConnecte(4, j.getPosX(), j.getPosY(), new boolean[8][8]);
+        int nbPieceB = 0;
+        for (int i = 0; i < 64; i++) {
+            if (((0b1L << i) & bitBoardBlancs) !=0){
+                nbPieceB = nbPieceConnecte(bitBoardBlancs, i, new boolean[64]);
+            }
+            if (nbPieceB >= 1) {
+                countBlanc++;
+            }
             if (maxBlanc < nbPieceB) {
                 maxBlanc = nbPieceB;
             }
         }
-        for (int i = 0; i < grid.length; i++) {
-            for (int j = 0; j < grid[i].length; j++) {
-                int tempN = calculSquare(2, i, j);
-                int tempB = calculSquare(4, i, j);
-                if (tempN >= 4) {
-                    maxNoir++;
-                }
-                if (tempB >= 4) {
-                    maxBlanc++;
-                }
-            }
-        }
+
+        maxBlanc = maxBlanc - countBlanc - 1;
+
+        /**
+         * for (int i = 0; i < grid.length; i++) {
+         * for (int j = 0; j < grid[i].length; j++) {
+         * int tempN = calculSquare(2, i, j);
+         * int tempB = calculSquare(4, i, j);
+         * if (tempN >= 4) {
+         * maxNoir++;
+         * }
+         * if (tempB >= 4) {
+         * maxBlanc++;
+         * }
+         * }
+         * }
+         */
 
         // Blanc doit toujours avec le plus de + grand nombre et noir le plus petit
         rate = maxBlanc - maxNoir;
 
-        this.score = rate;
+        if(countNoir == 1){
+            rate += 1000000;
+            gameOver = true;
+            System.out.println("VICTOIRE BLANCHE EN VUE");
+        }
+        if (countBlanc == 1) {
+            rate -= 1000000;
+            gameOver = true;
+            System.out.println("VICTOIRE NOIRE EN VUE");
+        }
+
+        this.score += rate;
 
     }
 
-    public int calculVictoire() {
-
-        if (nbPieceConnecte(4, Jblanc.getListeJeton().get(0).getPosX(), Jblanc.getListeJeton().get(0).getPosY(),
-                new boolean[8][8]) == nbBlancs) {
-            return 1;
-        }
-
-        if (nbPieceConnecte(2, Jnoir.getListeJeton().get(0).getPosX(), Jnoir.getListeJeton().get(0).getPosY(),
-                new boolean[8][8]) == nbNoirs) {
-            return 2;
-        }
-
-        return 0;
-    }
-
-    public int nbPieceConnecte(int joueur, int row, int col, boolean[][] verifiedGrid) {
-        if (row < 0 || row > 7 || col < 0 || col > 7 || grid[row][col] != joueur || verifiedGrid[row][col]) {
+    public int nbPieceConnecte(long bitBoard, int position, boolean[] verifiedGrid) {
+        if (verifiedGrid[position]) {
             return 0;
         }
-        verifiedGrid[row][col] = true;
-        return 1 + nbPieceConnecte(joueur, row - 1, col - 1, verifiedGrid)
-                + nbPieceConnecte(joueur, row - 1, col, verifiedGrid)
-                + nbPieceConnecte(joueur, row - 1, col + 1, verifiedGrid)
-                + nbPieceConnecte(joueur, row, col - 1, verifiedGrid)
-                + nbPieceConnecte(joueur, row, col + 1, verifiedGrid)
-                + nbPieceConnecte(joueur, row + 1, col + 1, verifiedGrid)
-                + nbPieceConnecte(joueur, row + 1, col, verifiedGrid)
-                + nbPieceConnecte(joueur, row + 1, col - 1, verifiedGrid);
+        int count = 1;
+        verifiedGrid[position] = true;
+        long pos = (0b1L << position);
+        if ((pos & 0b1L) != 0){
+            count += nbPieceConnecte(bitBoard, position + 1, verifiedGrid)
+            + nbPieceConnecte(bitBoard, position + 8, verifiedGrid)
+            + nbPieceConnecte(bitBoard, position + 9, verifiedGrid);
+        }
+        else if ((pos & (0b1L << 7)) != 0) {
+            count += nbPieceConnecte(bitBoard, position - 1, verifiedGrid)
+            + nbPieceConnecte(bitBoard, position + 8, verifiedGrid)
+            + nbPieceConnecte(bitBoard, position + 7, verifiedGrid);
+        }
+        else if ((pos & (0b1L << 56)) != 0) {
+            count += nbPieceConnecte(bitBoard, position + 1, verifiedGrid)
+            + nbPieceConnecte(bitBoard, position - 8, verifiedGrid)
+            + nbPieceConnecte(bitBoard, position - 7, verifiedGrid);
+        }
+        else if ((pos & (0b1L << 63)) != 0) {
+            count += nbPieceConnecte(bitBoard, position - 1, verifiedGrid)
+            + nbPieceConnecte(bitBoard, position - 8, verifiedGrid)
+            + nbPieceConnecte(bitBoard, position - 9, verifiedGrid);
+        }
+        else if ((pos & Masks.getMask(0, Masks.S_N)) != 0) {
+            count += nbPieceConnecte(bitBoard, position + 1, verifiedGrid)
+            + nbPieceConnecte(bitBoard, position + 8, verifiedGrid)
+            + nbPieceConnecte(bitBoard, position + 9, verifiedGrid)
+            + nbPieceConnecte(bitBoard, position - 8, verifiedGrid)
+            + nbPieceConnecte(bitBoard, position - 7, verifiedGrid);
+        }
+        else if ((pos & Masks.getMask(7, Masks.S_N)) != 0) {
+            count += nbPieceConnecte(bitBoard, position - 1, verifiedGrid)
+            + nbPieceConnecte(bitBoard, position + 8, verifiedGrid)
+            + nbPieceConnecte(bitBoard, position - 9, verifiedGrid)
+            + nbPieceConnecte(bitBoard, position - 8, verifiedGrid)
+            + nbPieceConnecte(bitBoard, position + 7, verifiedGrid);
+        }
+        else if ((pos & Masks.getMask(0, Masks.E_O)) != 0) {
+            count += nbPieceConnecte(bitBoard, position + 1, verifiedGrid)
+            + nbPieceConnecte(bitBoard, position + 8, verifiedGrid)
+            + nbPieceConnecte(bitBoard, position + 9, verifiedGrid)
+            + nbPieceConnecte(bitBoard, position - 1, verifiedGrid)
+            + nbPieceConnecte(bitBoard, position + 7, verifiedGrid);
+        }
+        else if ((pos & Masks.getMask(56, Masks.E_O)) != 0) {
+            count += nbPieceConnecte(bitBoard, position + 1, verifiedGrid)
+            + nbPieceConnecte(bitBoard, position - 8, verifiedGrid)
+            + nbPieceConnecte(bitBoard, position - 9, verifiedGrid)
+            + nbPieceConnecte(bitBoard, position - 1, verifiedGrid)
+            + nbPieceConnecte(bitBoard, position - 7, verifiedGrid);
+        }
+        else {
+            count += nbPieceConnecte(bitBoard, position + 1, verifiedGrid)
+            + nbPieceConnecte(bitBoard, position + 8, verifiedGrid)
+            + nbPieceConnecte(bitBoard, position + 9, verifiedGrid)
+            + nbPieceConnecte(bitBoard, position - 1, verifiedGrid)
+            + nbPieceConnecte(bitBoard, position + 7, verifiedGrid)
+            + nbPieceConnecte(bitBoard, position - 8, verifiedGrid)
+            + nbPieceConnecte(bitBoard, position - 9, verifiedGrid)
+            + nbPieceConnecte(bitBoard, position - 7, verifiedGrid);
+        }
+        return count;
 
     }
 
@@ -309,6 +365,7 @@ public class GameInstance {
                                                         Masks.getMovementCode(caseJeton, caseDestination));
                                 children.add(enfant);
                             }
+                            System.out.println("enfant créé");
                         }
                         
                         // dans l'autre direction
@@ -341,6 +398,7 @@ public class GameInstance {
                                                         Masks.getMovementCode(caseJeton, caseDestination));
                                 children.add(enfant);
                             }
+                            System.out.println("enfant créé");
                         }
                     }
                 }
@@ -397,6 +455,7 @@ public class GameInstance {
                                                         Masks.getMovementCode(caseJeton, caseDestination));
                                 children.add(enfant);
                             }
+                            System.out.println("enfant créé");
                         }
                         
                         // dans l'autre direction
@@ -429,6 +488,7 @@ public class GameInstance {
                                                         Masks.getMovementCode(caseJeton, caseDestination));
                                 children.add(enfant);
                             }
+                            System.out.println("enfant créé");
                         }
                     }
                 }
@@ -483,6 +543,7 @@ public class GameInstance {
                                                         Masks.getMovementCode(caseJeton, caseDestination));
                                 children.add(enfant);
                             }
+                            System.out.println("enfant créé");
                         }
                         
                         // dans l'autre direction
@@ -515,6 +576,7 @@ public class GameInstance {
                                                         Masks.getMovementCode(caseJeton, caseDestination));
                                 children.add(enfant);
                             }
+                            System.out.println("enfant créé");
                         }
                     }
                 }
@@ -567,6 +629,7 @@ public class GameInstance {
                                                         Masks.getMovementCode(caseJeton, caseDestination));
                                 children.add(enfant);
                             }
+                            System.out.println("enfant créé");
                         }
                         
                         // dans l'autre direction
@@ -599,6 +662,7 @@ public class GameInstance {
                                                         Masks.getMovementCode(caseJeton, caseDestination));
                                 children.add(enfant);
                             }
+                            System.out.println("enfant créé");
                         }
                     }
                 }
@@ -654,6 +718,7 @@ public class GameInstance {
                                                         Masks.getMovementCode(caseJeton, caseDestination));
                                 children.add(enfant);
                             }
+                            System.out.println("enfant créé");
                         }
                         
                         // dans l'autre direction
@@ -686,6 +751,7 @@ public class GameInstance {
                                                         Masks.getMovementCode(caseJeton, caseDestination));
                                 children.add(enfant);
                             }
+                            System.out.println("enfant créé");
                         }
                     }
                 }
@@ -738,6 +804,7 @@ public class GameInstance {
                                                         Masks.getMovementCode(caseJeton, caseDestination));
                                 children.add(enfant);
                             }
+                            System.out.println("enfant créé");
                         }
                         
                         // dans l'autre direction
@@ -770,6 +837,7 @@ public class GameInstance {
                                                         Masks.getMovementCode(caseJeton, caseDestination));
                                 children.add(enfant);
                             }
+                            System.out.println("enfant créé");
                         }
                     }
                 }
