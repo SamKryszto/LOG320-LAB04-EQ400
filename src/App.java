@@ -36,6 +36,11 @@ public class App {
 		int y1;
 		int x2;
 		int y2;
+		int xy1;
+		int xy2;
+		long bitBoardAllie = 0L;
+		long bitBoardAdverse = 0L;
+		long[] newBitBoards;
 
 		GameInstance currentGameState = new GameInstance();
 		GameInstance newInst;
@@ -61,68 +66,40 @@ public class App {
 					String s = new String(aBuffer).trim();
 					System.out.println(s);
 
-					long bitBoardBlancs = 0L;
-					long bitBoardNoirs = 0L;
-
-					for (int i = 0; i < s.length(); i++) {
+					for (int i = 0; i < s.length(); i+=2) {
 						char c = s.charAt(i);
 						if (c == '2') {
-							bitBoardNoirs = bitBoardNoirs * 2 + 1;
-							bitBoardBlancs = bitBoardBlancs * 2;
+							bitBoardAdverse = bitBoardAdverse * 2 + 1;
+							bitBoardAllie = bitBoardAllie * 2;
 						}
 						else if (c == '4'){
-							bitBoardNoirs = bitBoardNoirs * 2;
-							bitBoardBlancs = bitBoardBlancs * 2 + 1;
+							bitBoardAdverse = bitBoardAdverse * 2;
+							bitBoardAllie = bitBoardAllie * 2 + 1;
 						}
-						else if (c == ' '){}
 						else {
-							bitBoardNoirs = bitBoardNoirs * 2;
-							bitBoardBlancs = bitBoardBlancs * 2;
+							bitBoardAdverse = bitBoardAdverse * 2;
+							bitBoardAllie = bitBoardAllie * 2;
 						}
 						
 					}
 					// System.out.println(Long.toBinaryString(bitBoardBlancs));
 					// System.out.println(Long.toBinaryString(bitBoardNoirs));
 
-					String[] boardValues = s.split(" ");
-					int x = 0, y = 0;
-					for (int i = 0; i < boardValues.length; i++) {
-						board[x][y] = Integer.parseInt(boardValues[i]);
-						System.out.printf("%d", board[x][y]);
-						y++;
-						if (y == 8) {
-							y = 0;
-							x++;
-							System.out.printf("\n");
-						}
-					}
-
 					System.out.println("Nouvelle partie! Vous jouez blanc, entrez votre premier coup : ");
 					String move = null;
 					isWhite = true;
 
-					currentGameState = new GameInstance(bitBoardBlancs, bitBoardNoirs, isWhite, null, 12, 12, null);
+					currentGameState = new GameInstance(bitBoardAllie, bitBoardAdverse, isWhite, null, 12, 12, null);
 
-					move = app.getBestMoveWithTimeAllowed(currentGameState, isWhite);
-					r1 = move.charAt(2);
-					c1 = move.charAt(1);
-					r2 = move.charAt(4);
-					c2 = move.charAt(3);
-					System.out.println("Move : " + r1 + "/" + c1 + "," + r2 + "/" + c2);
-					
-					x1 = 8 - Character.getNumericValue(r1);
-					y1 = (char) (c1 - 65);
-					x2 = 8 - Character.getNumericValue(r2);
-					y2 = (char) (c2 - 65);
+					newInst = app.getBestMoveWithTimeAllowed(currentGameState, isWhite);
+					move = newInst.getLastMoveString();
+					r1 = move.charAt(1);
+					c1 = move.charAt(0);
+					r2 = move.charAt(3);
+					c2 = move.charAt(2);
+					System.out.println("Move : " + newInst.getLastMoveString());
 
-					board[x1][y1] = 0;
-					if (!isWhite) {
-						board[x2][y2] = 2;
-					} else {
-						board[x2][y2] = 4;
-					}
-
-					newInst = new GameInstance(board, isWhite, move);
+					newInst = new GameInstance(newInst.getBitBoardBlancs(), newInst.getBitBoardNoirs(), isWhite, newInst.getLastMoveString());
 
 					output.write(move.getBytes(), 0, move.length());
 					output.flush();
@@ -137,16 +114,19 @@ public class App {
 					input.read(aBuffer, 0, size);
 					String s = new String(aBuffer).trim();
 					System.out.println(s);
-					String[] boardValues = s.split(" ");
-					int x = 0, y = 0;
-					for (int i = 0; i < boardValues.length; i++) {
-						board[x][y] = Integer.parseInt(boardValues[i]);
-						System.out.printf("%d", board[x][y]);
-						y++;
-						if (y == 8) {
-							y = 0;
-							x++;
-							System.out.printf("\n");
+					for (int i = 0; i < s.length(); i+=2) {
+						char c = s.charAt(i);
+						if (c == '2') {
+							bitBoardAdverse = bitBoardAdverse * 2;
+							bitBoardAllie = bitBoardAllie * 2 + 1;
+						}
+						else if (c == '4'){
+							bitBoardAdverse = bitBoardAdverse * 2 + 1;
+							bitBoardAllie = bitBoardAllie * 2;
+						}
+						else {
+							bitBoardAdverse = bitBoardAdverse * 2;
+							bitBoardAllie = bitBoardAllie * 2;
 						}
 					}
 				}
@@ -167,44 +147,45 @@ public class App {
 					r2 = s.charAt(7);
 					c2 = s.charAt(6);
 
-					x1 = 8 - Character.getNumericValue(r1);
-					y1 = (char) (c1 - 65);
-					x2 = 8 - Character.getNumericValue(r2);
-					y2 = (char) (c2 - 65);
-					System.out.println("DernierC :" + x1 + "" + y1 + "," + x2 + "" + y2);
-					board[x1][y1] = 0;
+					x1 = (Character.getNumericValue(r1) - 1) * 8;
+					y1 = 8 - ((int)(c1 - 65));
+					x2 = (Character.getNumericValue(r2) - 1) * 8;
+					y2 = 8 - ((int)(c2 - 65));
+					xy1 = x1 + y1;
+					xy2 = x2 + y2;
+
+					System.out.println("DernierC : " + Masks.getMovementCode(xy1, xy2));
+					
+					newBitBoards = Masks.movePiece(xy1, xy2, bitBoardAdverse, bitBoardAllie);
+
+					bitBoardAdverse = newBitBoards[0];
+					bitBoardAllie = newBitBoards[1];
+
 					if (isWhite) {
-						board[x2][y2] = 2;
-					} else {
-						board[x2][y2] = 4;
+						newInst = new GameInstance(bitBoardAllie, bitBoardAdverse, isWhite, Masks.getMovementCode(xy1, xy2));
 					}
-					String a = c1 + "" + r1 + "" + c2 + "" + r2;
-					newInst = new GameInstance(board, isWhite, a);
+					else {
+						newInst = new GameInstance(bitBoardAdverse, bitBoardAllie, isWhite, Masks.getMovementCode(xy1, xy2));
+					}
 
 					System.out.println("Entrez votre coup : ");
 					String move = null;
-					move = app.getBestMoveWithTimeAllowed(newInst, isWhite);
+					newInst = app.getBestMoveWithTimeAllowed(newInst, isWhite);
+					move = newInst.getLastMoveString();
 					output.write(move.getBytes(), 0, move.length());
 
-					r1 = move.charAt(2);
-					c1 = move.charAt(1);
-					r2 = move.charAt(4);
-					c2 = move.charAt(3);
+					r1 = move.charAt(1);
+					c1 = move.charAt(0);
+					r2 = move.charAt(3);
+					c2 = move.charAt(2);
+
 					System.out.println("Move : " + r1 + "/" + c1 + "," + r2 + "/" + c2);
 					x1 = 8 - Character.getNumericValue(r1);
 					y1 = (char) (c1 - 65);
 					x2 = 8 - Character.getNumericValue(r2);
 					y2 = (char) (c2 - 65);
 
-					System.out.println("NotreMove : " + move + " / " + x1 + "" + y1 + "," + x2 + "" + y2);
-					board[x1][y1] = 0;
-					if (!isWhite) {
-						board[x2][y2] = 2;
-					} else {
-						board[x2][y2] = 4;
-					}
-
-					newInst = new GameInstance(board, !isWhite, move);
+					newInst = new GameInstance(newInst.getBitBoardBlancs(), newInst.getBitBoardNoirs(), !isWhite, move);
 
 					output.flush();
 				}
@@ -213,7 +194,8 @@ public class App {
 					System.exit(0);
 					System.out.println("Coup invalide, entrez un nouveau coup : ");
 					String move = null;
-					move = app.getBestMoveWithTimeAllowed(currentGameState, isWhite);
+					newInst = app.getBestMoveWithTimeAllowed(currentGameState, isWhite);
+					move = newInst.getLastMoveString();
 					output.write(move.getBytes(), 0, move.length());
 					output.flush();
 
@@ -236,7 +218,7 @@ public class App {
 		}
 	}
 
-	public String getBestMoveWithTimeAllowed(GameInstance gameInstance, boolean isMaxPlayer) {
+	public GameInstance getBestMoveWithTimeAllowed(GameInstance gameInstance, boolean isMaxPlayer) {
 
 		timeStart = System.currentTimeMillis();
 		int score = minimax(gameInstance, isMaxPlayer, 5, -100000000, 100000000);

@@ -42,6 +42,8 @@ public class GameInstance {
         this.grid = new int[][] { { 0, 2, 2, 2, 2, 2, 2, 0 }, { 4, 0, 0, 0, 0, 0, 0, 4 }, { 4, 0, 0, 0, 0, 0, 0, 4 },
                 { 4, 0, 0, 0, 0, 0, 0, 4 }, { 4, 0, 0, 0, 0, 0, 0, 4 }, { 4, 0, 0, 0, 0, 0, 0, 4 },
                 { 4, 0, 0, 0, 0, 0, 0, 4 }, { 0, 2, 2, 2, 2, 2, 2, 0 } };
+        this.bitBoardBlancs = 0;
+        this.bitBoardNoirs = 0;
         this.gameOver = false;
         this.Jblanc = new Joueur(true, new ArrayList<Jeton>());
         this.Jnoir = new Joueur(false, new ArrayList<Jeton>());
@@ -66,14 +68,14 @@ public class GameInstance {
         this.grid = grid;
     }
 
-    public GameInstance(int[][] grid, boolean tourDeBlanc, String lastMove) {
-        this.grid = grid;
+    public GameInstance(long bitBoardBlancs, long bitBoardNoirs, boolean tourDeBlanc, String lastMove) {
+        this.bitBoardBlancs = bitBoardBlancs;
+        this.bitBoardNoirs = bitBoardNoirs;
         this.tourDeBlanc = tourDeBlanc;
         this.lastMove = lastMove;
         this.Jblanc = new Joueur(true, new ArrayList<Jeton>());
         this.Jnoir = new Joueur(false, new ArrayList<Jeton>());
         this.children = new ArrayList<GameInstance>();
-        setJoueurJeton(grid);
         this.nbBlancs = Jblanc.getListeJeton().size();
         this.nbNoirs = Jnoir.getListeJeton().size();
 
@@ -323,14 +325,14 @@ public class GameInstance {
             // on récupère un bitBoard représentant les jetons alliés dans la ligne
             //jetonsAlliesDansLigne = Masks.getPiecesNToS(premiereCaseDansLigne, bitBoardAllie);
             jetonsAlliesDansLigne = bitBoardAllie & Masks.getMask(premiereCaseDansLigne, Masks.S_N);
-            System.out.println(Long.toBinaryString(jetonsAlliesDansLigne));
+            // System.out.println(Long.toBinaryString(jetonsAlliesDansLigne));
             // s'il y a des jetons alliés dans la ligne
             if (jetonsAlliesDansLigne != 0) {
                 // On récupère un bitboard représentant les jetons adverses dans la ligne
                 //jetonsAdversesDansLigne = Masks.getPiecesNToS(premiereCaseDansLigne, bitBoardAdverse);
                 jetonsAdversesDansLigne = bitBoardAdverse & Masks.getMask(premiereCaseDansLigne, Masks.S_N);
                 // on compte le nombre de jetons dans la ligne
-                nombreJetonsDansLigne = countJetonsDansLigne(jetonsAlliesDansLigne | jetonsAdversesDansLigne);
+                nombreJetonsDansLigne = Long.bitCount(jetonsAlliesDansLigne | jetonsAdversesDansLigne);
                 deplacementDansLigne = nombreJetonsDansLigne * 8;
                 // pour chaque case dans la ligne
                 for(int caseJeton = premiereCaseDansLigne; caseJeton < 63; caseJeton += 8) {
@@ -365,7 +367,7 @@ public class GameInstance {
                                                         Masks.getMovementCode(caseJeton, caseDestination));
                                 children.add(enfant);
                             }
-                            System.out.println("enfant créé");
+                            // System.out.println("enfant créé");
                         }
                         
                         // dans l'autre direction
@@ -398,7 +400,7 @@ public class GameInstance {
                                                         Masks.getMovementCode(caseJeton, caseDestination));
                                 children.add(enfant);
                             }
-                            System.out.println("enfant créé");
+                            // System.out.println("enfant créé");
                         }
                     }
                 }
@@ -412,14 +414,14 @@ public class GameInstance {
         for (premiereCaseDansLigne = 0; premiereCaseDansLigne < 63; premiereCaseDansLigne += 8) {
             // on récupère un bitBoard représentant les jetons alliés dans la ligne
             jetonsAlliesDansLigne = bitBoardAllie & Masks.getMask(premiereCaseDansLigne, Masks.E_O);
-            System.out.println(Long.toBinaryString(jetonsAlliesDansLigne));
+            // System.out.println(Long.toBinaryString(jetonsAlliesDansLigne));
             // s'il y a des jetons alliés dans la ligne
             if (jetonsAlliesDansLigne != 0) {
                 // On récupère un bitboard représentant les jetons adverses dans la ligne
                 //jetonsAdversesDansLigne = Masks.getPiecesNToS(premiereCaseDansLigne, bitBoardAdverse);
                 jetonsAdversesDansLigne = bitBoardAdverse & Masks.getMask(premiereCaseDansLigne, Masks.E_O);
                 // on compte le nombre de jetons dans la ligne
-                nombreJetonsDansLigne = countJetonsDansLigne(jetonsAlliesDansLigne | jetonsAdversesDansLigne);
+                nombreJetonsDansLigne = Long.bitCount(jetonsAlliesDansLigne | jetonsAdversesDansLigne);
                 deplacementDansLigne = nombreJetonsDansLigne;
                 // pour chaque case dans la ligne
                 limiteLigne = premiereCaseDansLigne + 7;
@@ -455,7 +457,7 @@ public class GameInstance {
                                                         Masks.getMovementCode(caseJeton, caseDestination));
                                 children.add(enfant);
                             }
-                            System.out.println("enfant créé");
+                            // System.out.println("enfant créé");
                         }
                         
                         // dans l'autre direction
@@ -488,7 +490,7 @@ public class GameInstance {
                                                         Masks.getMovementCode(caseJeton, caseDestination));
                                 children.add(enfant);
                             }
-                            System.out.println("enfant créé");
+                            // System.out.println("enfant créé");
                         }
                     }
                 }
@@ -500,14 +502,14 @@ public class GameInstance {
         for (premiereCaseDansLigne = 0; premiereCaseDansLigne < 7; premiereCaseDansLigne++) {
             // on récupère un bitBoard représentant les jetons alliés dans la ligne
             jetonsAlliesDansLigne = bitBoardAllie & Masks.getMask(premiereCaseDansLigne, Masks.SE_NO);
-            System.out.println(Long.toBinaryString(jetonsAlliesDansLigne));
+            // System.out.println(Long.toBinaryString(jetonsAlliesDansLigne));
             // s'il y a des jetons alliés dans la ligne
             if (jetonsAlliesDansLigne != 0) {
                 // On récupère un bitboard représentant les jetons adverses dans la ligne
                 //jetonsAdversesDansLigne = Masks.getPiecesNToS(premiereCaseDansLigne, bitBoardAdverse);
                 jetonsAdversesDansLigne = bitBoardAdverse & Masks.getMask(premiereCaseDansLigne, Masks.SE_NO);
                 // on compte le nombre de jetons dans la ligne
-                nombreJetonsDansLigne = countJetonsDansLigne(jetonsAlliesDansLigne | jetonsAdversesDansLigne);
+                nombreJetonsDansLigne = Long.bitCount(jetonsAlliesDansLigne | jetonsAdversesDansLigne);
                 deplacementDansLigne = nombreJetonsDansLigne * 9;
                 // pour chaque case dans la ligne
                 limiteLigne = 63 - 8 * premiereCaseDansLigne;
@@ -543,7 +545,7 @@ public class GameInstance {
                                                         Masks.getMovementCode(caseJeton, caseDestination));
                                 children.add(enfant);
                             }
-                            System.out.println("enfant créé");
+                            // System.out.println("enfant créé");
                         }
                         
                         // dans l'autre direction
@@ -576,7 +578,7 @@ public class GameInstance {
                                                         Masks.getMovementCode(caseJeton, caseDestination));
                                 children.add(enfant);
                             }
-                            System.out.println("enfant créé");
+                            // System.out.println("enfant créé");
                         }
                     }
                 }
@@ -586,14 +588,14 @@ public class GameInstance {
         for (premiereCaseDansLigne = 8; premiereCaseDansLigne < 63; premiereCaseDansLigne += 8) {
             // on récupère un bitBoard représentant les jetons alliés dans la ligne
             jetonsAlliesDansLigne = bitBoardAllie & Masks.getMask(premiereCaseDansLigne, Masks.SE_NO);
-            System.out.println(Long.toBinaryString(jetonsAlliesDansLigne));
+            // System.out.println(Long.toBinaryString(jetonsAlliesDansLigne));
             // s'il y a des jetons alliés dans la ligne
             if (jetonsAlliesDansLigne != 0) {
                 // On récupère un bitboard représentant les jetons adverses dans la ligne
                 //jetonsAdversesDansLigne = Masks.getPiecesNToS(premiereCaseDansLigne, bitBoardAdverse);
                 jetonsAdversesDansLigne = bitBoardAdverse & Masks.getMask(premiereCaseDansLigne, Masks.SE_NO);
                 // on compte le nombre de jetons dans la ligne
-                nombreJetonsDansLigne = countJetonsDansLigne(jetonsAlliesDansLigne | jetonsAdversesDansLigne);
+                nombreJetonsDansLigne = Long.bitCount(jetonsAlliesDansLigne | jetonsAdversesDansLigne);
                 deplacementDansLigne = nombreJetonsDansLigne * 9;
                 // pour chaque case dans la ligne
                 limiteLigne = 63;
@@ -629,7 +631,7 @@ public class GameInstance {
                                                         Masks.getMovementCode(caseJeton, caseDestination));
                                 children.add(enfant);
                             }
-                            System.out.println("enfant créé");
+                            // System.out.println("enfant créé");
                         }
                         
                         // dans l'autre direction
@@ -662,7 +664,7 @@ public class GameInstance {
                                                         Masks.getMovementCode(caseJeton, caseDestination));
                                 children.add(enfant);
                             }
-                            System.out.println("enfant créé");
+                            // System.out.println("enfant créé");
                         }
                     }
                 }
@@ -675,14 +677,14 @@ public class GameInstance {
         for (premiereCaseDansLigne = 1; premiereCaseDansLigne < 8; premiereCaseDansLigne++) {
             // on récupère un bitBoard représentant les jetons alliés dans la ligne
             jetonsAlliesDansLigne = bitBoardAllie & Masks.getMask(premiereCaseDansLigne, Masks.SO_NE);
-            System.out.println(Long.toBinaryString(jetonsAlliesDansLigne));
+            // System.out.println(Long.toBinaryString(jetonsAlliesDansLigne));
             // s'il y a des jetons alliés dans la ligne
             if (jetonsAlliesDansLigne != 0) {
                 // On récupère un bitboard représentant les jetons adverses dans la ligne
                 //jetonsAdversesDansLigne = Masks.getPiecesNToS(premiereCaseDansLigne, bitBoardAdverse);
                 jetonsAdversesDansLigne = bitBoardAdverse & Masks.getMask(premiereCaseDansLigne, Masks.SO_NE);
                 // on compte le nombre de jetons dans la ligne
-                nombreJetonsDansLigne = countJetonsDansLigne(jetonsAlliesDansLigne | jetonsAdversesDansLigne);
+                nombreJetonsDansLigne = Long.bitCount(jetonsAlliesDansLigne | jetonsAdversesDansLigne);
                 deplacementDansLigne = nombreJetonsDansLigne * 7;
                 // pour chaque case dans la ligne
                 limiteLigne = premiereCaseDansLigne + 8 * premiereCaseDansLigne;
@@ -718,7 +720,7 @@ public class GameInstance {
                                                         Masks.getMovementCode(caseJeton, caseDestination));
                                 children.add(enfant);
                             }
-                            System.out.println("enfant créé");
+                            // System.out.println("enfant créé");
                         }
                         
                         // dans l'autre direction
@@ -751,7 +753,7 @@ public class GameInstance {
                                                         Masks.getMovementCode(caseJeton, caseDestination));
                                 children.add(enfant);
                             }
-                            System.out.println("enfant créé");
+                            // System.out.println("enfant créé");
                         }
                     }
                 }
@@ -761,14 +763,14 @@ public class GameInstance {
         for (premiereCaseDansLigne = 15; premiereCaseDansLigne < 63; premiereCaseDansLigne += 8) {
             // on récupère un bitBoard représentant les jetons alliés dans la ligne
             jetonsAlliesDansLigne = bitBoardAllie & Masks.getMask(premiereCaseDansLigne, Masks.SO_NE);
-            System.out.println(Long.toBinaryString(jetonsAlliesDansLigne));
+            // System.out.println(Long.toBinaryString(jetonsAlliesDansLigne));
             // s'il y a des jetons alliés dans la ligne
             if (jetonsAlliesDansLigne != 0) {
                 // On récupère un bitboard représentant les jetons adverses dans la ligne
                 //jetonsAdversesDansLigne = Masks.getPiecesNToS(premiereCaseDansLigne, bitBoardAdverse);
                 jetonsAdversesDansLigne = bitBoardAdverse & Masks.getMask(premiereCaseDansLigne, Masks.SO_NE);
                 // on compte le nombre de jetons dans la ligne
-                nombreJetonsDansLigne = countJetonsDansLigne(jetonsAlliesDansLigne | jetonsAdversesDansLigne);
+                nombreJetonsDansLigne = Long.bitCount(jetonsAlliesDansLigne | jetonsAdversesDansLigne);
                 deplacementDansLigne = nombreJetonsDansLigne * 7;
                 // pour chaque case dans la ligne
                 limiteLigne = 63;
@@ -804,7 +806,7 @@ public class GameInstance {
                                                         Masks.getMovementCode(caseJeton, caseDestination));
                                 children.add(enfant);
                             }
-                            System.out.println("enfant créé");
+                            // System.out.println("enfant créé");
                         }
                         
                         // dans l'autre direction
@@ -837,26 +839,12 @@ public class GameInstance {
                                                         Masks.getMovementCode(caseJeton, caseDestination));
                                 children.add(enfant);
                             }
-                            System.out.println("enfant créé");
+                            // System.out.println("enfant créé");
                         }
                     }
                 }
             }
         }
-    }
-
-    /**
-     * Méthode permettant de compter le nombre de bits à 1 dans un long utilisant 
-     * l'algorithme de Brian Kernighan.
-     */
-    public int countJetonsDansLigne(long jetonsDansLigne) {
-        int count = 0;
-
-        while (jetonsDansLigne != 0) {
-            jetonsDansLigne &= (jetonsDansLigne - 1);
-            count++;
-        }
-        return count;
     }
 
     public int[][] getGrid() {
@@ -888,7 +876,7 @@ public class GameInstance {
         return this.lastMove;
     }
 
-    public String getNextMove(int score) {
+    public GameInstance getNextMove(int score) {
         GameInstance child = null;
         System.out.println("Size : " + children.size());
         System.out.println("Score : " + score);
@@ -898,7 +886,7 @@ public class GameInstance {
                 break;
             }
         }
-        return child.getLastMoveString();
+        return child;
     }
 
     // temp
