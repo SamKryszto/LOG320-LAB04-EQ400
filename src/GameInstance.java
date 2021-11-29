@@ -102,36 +102,32 @@ public class GameInstance {
         int countNoir = 0;
         int countBlanc = 0;
         ArrayList<Jeton> listeJetonNoir = Jnoir.getListeJeton();
-        int maxNoir = 0;
         int heatScoreNoir = 0;
+        boolean[][] tabVerNo= new boolean[8][8];
         for (Jeton j : listeJetonNoir) {
             heatScoreNoir += heatmap[j.getPosX()][j.getPosY()];
-            int nbPieceN = nbPieceConnecte(2, j.getPosX(), j.getPosY(), new boolean[8][8]);
+            int nbPieceN = nbPieceConnecte(2, j.getPosX(), j.getPosY(),tabVerNo);
             if (nbPieceN >= 1) {
                 countNoir++;
             }
-            if (maxNoir < nbPieceN) {
-                maxNoir = nbPieceN;
-            }
+           
         }
 
-        maxNoir = 10*(maxNoir - (countNoir - 1)) + heatScoreNoir;
+        countNoir = - 10 * (countNoir - 1) + heatScoreNoir;
 
         ArrayList<Jeton> listeJetonBlanc = Jblanc.getListeJeton();
-        int maxBlanc = 0;
         int heatScoreBlanc = 0;
+        boolean[][] tabVerBl= new boolean[8][8];
         for (Jeton j : listeJetonBlanc) {
-            int nbPieceB = nbPieceConnecte(4, j.getPosX(), j.getPosY(), new boolean[8][8]);
+            int nbPieceB = nbPieceConnecte(4, j.getPosX(), j.getPosY(), tabVerBl);
             heatScoreBlanc += heatmap[j.getPosX()][j.getPosY()];
             if (nbPieceB >= 1) {
                 countBlanc++;
             }
-            if (maxBlanc < nbPieceB) {
-                maxBlanc = nbPieceB;
-            }
+           
         }
 
-        maxBlanc = 10*(maxBlanc - (countBlanc - 1)) + heatScoreBlanc ;
+        countBlanc = - 10 * (countBlanc - 1) + heatScoreBlanc ;
 
         /**
          * for (int i = 0; i < grid.length; i++) {
@@ -149,7 +145,7 @@ public class GameInstance {
          */
 
         // Blanc doit toujours avec le plus de + grand nombre et noir le plus petit
-        rate = maxBlanc - maxNoir;
+        rate = countBlanc - countNoir;
 
         switch (calculVictoire()) {
             case 0:
@@ -157,10 +153,12 @@ public class GameInstance {
                 break;
             case 1: // Victoire blanc
                 rate = 1000000;
+                System.out.println("VICTOIRE ROUGE EN VUE");
                 gameOver = true;
                 break;
             case 2: // Victoire noir
                 rate = -1000000;
+                System.out.println("VICTOIRE NOIRE EN VUE");
                 gameOver = true;
                 break;
         }
