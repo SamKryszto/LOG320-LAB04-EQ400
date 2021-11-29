@@ -230,8 +230,6 @@ public class App {
 			score = minimax(gameInstance, isMaxPlayer, i, -100000000, 100000000);
 			System.out.println("score : " + score);
 		}
-		
-
 		return gameInstance.getNextMove(score);
 	}
 
