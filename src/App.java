@@ -12,7 +12,7 @@ public class App {
 
 	static private boolean isWhite;
 	private long timeStart;
-	private long timeDelay = 4950;
+	private long timeDelay = 100000000;
 	private int countDepth;
 	private int depth = 4;
 
@@ -67,22 +67,22 @@ public class App {
 					String s = new String(aBuffer).trim();
 					System.out.println(s);
 
-					// for (int i = 0; i < s.length(); i+=2) {
-					// 	char c = s.charAt(i);
-					// 	if (c == '2') {
-					// 		bitBoardAdverse = bitBoardAdverse * 2 + 1;
-					// 		bitBoardAllie = bitBoardAllie * 2;
-					// 	}
-					// 	else if (c == '4'){
-					// 		bitBoardAdverse = bitBoardAdverse * 2;
-					// 		bitBoardAllie = bitBoardAllie * 2 + 1;
-					// 	}
-					// 	else {
-					// 		bitBoardAdverse = bitBoardAdverse * 2;
-					// 		bitBoardAllie = bitBoardAllie * 2;
-					// 	}
+					for (int i = 0; i < s.length(); i+=2) {
+						char c = s.charAt(i);
+						if (c == '2') {
+							bitBoardAdverse = bitBoardAdverse * 2 + 1;
+							bitBoardAllie = bitBoardAllie * 2;
+						}
+						else if (c == '4'){
+							bitBoardAdverse = bitBoardAdverse * 2;
+							bitBoardAllie = bitBoardAllie * 2 + 1;
+						}
+						else {
+							bitBoardAdverse = bitBoardAdverse * 2;
+							bitBoardAllie = bitBoardAllie * 2;
+						}
 						
-					// }
+					}
 					// System.out.println(Long.toBinaryString(bitBoardBlancs));
 					// System.out.println(Long.toBinaryString(bitBoardNoirs));
 
@@ -90,8 +90,7 @@ public class App {
 					String move = null;
 					isWhite = true;
 
-					newInst = app.getBestMoveWithTimeAllowed(currentGameState, isWhite);
-					move = newInst.getLastMoveString();
+					move = app.getBestMoveWithTimeAllowed(currentGameState, isWhite);
 					r1 = move.charAt(1);
 					c1 = move.charAt(0);
 					r2 = move.charAt(3);
@@ -99,6 +98,13 @@ public class App {
 					System.out.println("Move : " + newInst.getLastMoveString());
 
 					output.write(move.getBytes(), 0, move.length());
+					if (isWhite) {
+						newInst = new GameInstance(bitBoardAllie, bitBoardAdverse, isWhite, move);
+					}
+					else {
+						newInst = new GameInstance(bitBoardAdverse, bitBoardAllie, isWhite, move);
+					}
+					System.out.println("Notre Move : " + move);
 					output.flush();
 				}
 				// Debut de la partie en joueur Noir
@@ -184,19 +190,19 @@ public class App {
 					// }
 					
 
+					
+
+					System.out.println("Entrez votre coup : ");
+					String move = null;
+					move = app.getBestMoveWithTimeAllowed(newInst, isWhite);
+					output.write(move.getBytes(), 0, move.length());
+
 					if (isWhite) {
 						newInst = new GameInstance(bitBoardAllie, bitBoardAdverse, isWhite, Masks.getMovementCode(xy1, xy2));
 					}
 					else {
 						newInst = new GameInstance(bitBoardAdverse, bitBoardAllie, isWhite, Masks.getMovementCode(xy1, xy2));
 					}
-
-					System.out.println("Entrez votre coup : ");
-					String move = null;
-					newInst = app.getBestMoveWithTimeAllowed(newInst, isWhite);
-					move = newInst.getLastMoveString();
-					output.write(move.getBytes(), 0, move.length());
-
 					System.out.println("Notre Move : " + move);
 					
 					output.flush();
@@ -206,9 +212,15 @@ public class App {
 					System.exit(0);
 					System.out.println("Coup invalide, entrez un nouveau coup : ");
 					String move = null;
-					newInst = app.getBestMoveWithTimeAllowed(currentGameState, isWhite);
-					move = newInst.getLastMoveString();
+					move = app.getBestMoveWithTimeAllowed(currentGameState, isWhite);
 					output.write(move.getBytes(), 0, move.length());
+					if (isWhite) {
+						newInst = new GameInstance(bitBoardAllie, bitBoardAdverse, isWhite, move);
+					}
+					else {
+						newInst = new GameInstance(bitBoardAdverse, bitBoardAllie, isWhite, move);
+					}
+					System.out.println("Notre Move : " + move);
 					output.flush();
 
 				}
@@ -230,7 +242,7 @@ public class App {
 		}
 	}
 
-	public GameInstance getBestMoveWithTimeAllowed(GameInstance gameInstance, boolean isMaxPlayer) {
+	public String getBestMoveWithTimeAllowed(GameInstance gameInstance, boolean isMaxPlayer) {
 
 		timeStart = System.currentTimeMillis();
 

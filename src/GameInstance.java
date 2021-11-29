@@ -39,17 +39,13 @@ public class GameInstance {
         this.tourDeBlanc = true;
         this.nbBlancs = 12;
         this.nbNoirs = 12;
-        this.grid = new int[][] { { 0, 2, 2, 2, 2, 2, 2, 0 }, { 4, 0, 0, 0, 0, 0, 0, 4 }, { 4, 0, 0, 0, 0, 0, 0, 4 },
-                { 4, 0, 0, 0, 0, 0, 0, 4 }, { 4, 0, 0, 0, 0, 0, 0, 4 }, { 4, 0, 0, 0, 0, 0, 0, 4 },
-                { 4, 0, 0, 0, 0, 0, 0, 4 }, { 0, 2, 2, 2, 2, 2, 2, 0 } };
-        this.bitBoardBlancs = 0;
-        this.bitBoardNoirs = 0;
+        this.bitBoardBlancs = 36452665219186944L;
+        this.bitBoardNoirs = 9079256848778920062L;
         this.gameOver = false;
         this.Jblanc = new Joueur(true, new ArrayList<Jeton>());
         this.Jnoir = new Joueur(false, new ArrayList<Jeton>());
         this.lastMove = "ERROR : First move";
         this.children = new ArrayList<GameInstance>();
-        setJoueurJeton(grid);
         // A revoir: quand generer les enfants?
     }
 
@@ -876,7 +872,7 @@ public class GameInstance {
         return this.lastMove;
     }
 
-    public GameInstance getNextMove(int score) {
+    public String getNextMove(int score) {
         GameInstance child = null;
         System.out.println("Size : " + children.size());
         System.out.println("Score : " + score);
@@ -886,19 +882,11 @@ public class GameInstance {
                 break;
             }
         }
-        return child;
+        return child.getLastMoveString();
     }
 
     // temp
-    public boolean compareGrids(int[][] gridToCompare) {
-        boolean same = true;
-        for (int i = 0; i < grid.length; i++) {
-            for (int j = 0; j < grid[i].length; j++) {
-                if (this.grid[i][j] != gridToCompare[i][j]) {
-                    same = false;
-                }
-            }
-        }
-        return same;
+    public boolean compareGrids(long bitBoardBlancs, long bitBoardNoirs) {
+        return ((this.bitBoardBlancs == bitBoardBlancs) && (this.bitBoardNoirs == bitBoardNoirs));
     }
 }
