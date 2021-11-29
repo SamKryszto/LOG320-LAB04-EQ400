@@ -143,12 +143,10 @@ public class GameInstance {
             case 1: // Victoire blanc
                 rate = 1000000;
                 gameOver = true;
-                System.out.println("VICTOIRE BLANCHE EN VUE");
                 break;
             case 2: // Victoire noir
                 rate = -1000000;
                 gameOver = true;
-                System.out.println("VICTOIRE NOIRE EN VUE");
                 break;
         }
 

@@ -2,12 +2,17 @@ import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.concurrent.TimeUnit;
+
+import static java.time.temporal.ChronoUnit.SECONDS;
 
 public class App {
 
-	static private double startTime;
-	static private double timeAllowed = 2 * Math.pow(10, 9);
 	static private boolean isWhite;
+	public long timeStart;
+	public long timeDelay = 4500;
 
 	/**
 	 * order of operations :
@@ -206,17 +211,17 @@ public class App {
 
 	public String getBestMoveWithTimeAllowed(GameInstance gameInstance, boolean isMaxPlayer) {
 
-		startTime = System.nanoTime();
+		timeStart = System.currentTimeMillis();
 		int score = minimax(gameInstance, isMaxPlayer, 5, -100000000, 100000000);
+
 		return gameInstance.getNextMove(score);
 	}
 
 	// Minimax + alpha-beta pruning
-	public int minimax(GameInstance gameInstance, boolean isMaxPlayer, int depth, int alpha, int beta) {
+	public int minimax(GameInstance gameInstance, boolean isMaxPlayer, int depth, int alpha,
+			int beta) {
 
-		// boolean timesUp = ((System.nanoTime() - startTime) > timeAllowed);
-
-		if (depth <= 0 || gameInstance.gameIsOver()) {
+		if (System.currentTimeMillis() - timeStart >= timeDelay || gameInstance.gameIsOver() || depth <= 0) {
 			if (!gameInstance.gameIsOver()) {
 				gameInstance.rate();
 			}
@@ -227,6 +232,7 @@ public class App {
 		ArrayList<GameInstance> children = gameInstance.getChildren();
 		if (isMaxPlayer) {
 			int maxRating = -1000000000;
+
 			for (int i = 0; i < children.size(); i++) {
 				GameInstance child = children.get(i);
 				int eval = minimax(child, !isMaxPlayer, depth - 1, alpha, beta);
