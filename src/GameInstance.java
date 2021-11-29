@@ -17,8 +17,8 @@ public class GameInstance {
     // Échiquier initial
     public GameInstance() {
         this.tourDeBlanc = true;
-        this.nbBlancs = 8;
-        this.nbNoirs = 8;
+        this.nbBlancs = 12;
+        this.nbNoirs = 12;
         this.grid = new int[][] { { 0, 2, 2, 2, 2, 2, 2, 0 }, { 4, 0, 0, 0, 0, 0, 0, 4 }, { 4, 0, 0, 0, 0, 0, 0, 4 },
                 { 4, 0, 0, 0, 0, 0, 0, 4 }, { 4, 0, 0, 0, 0, 0, 0, 4 }, { 4, 0, 0, 0, 0, 0, 0, 4 },
                 { 4, 0, 0, 0, 0, 0, 0, 4 }, { 0, 2, 2, 2, 2, 2, 2, 0 } };
@@ -55,20 +55,7 @@ public class GameInstance {
         this.children = new ArrayList<GameInstance>();
         setJoueurJeton(grid);
         this.nbBlancs = Jblanc.getListeJeton().size();
-        this.nbNoirs = Jblanc.getListeJeton().size();
-
-        /**
-         * switch (calculVictoire()) {
-         * case 0:
-         * // Rien
-         * case 1: // Victoire blanc
-         * this.score = 1000;
-         * this.gameOver = true;
-         * case 2: // Victoire noir
-         * this.score = -1000;
-         * this.gameOver = true;
-         * }
-         */
+        this.nbNoirs = Jnoir.getListeJeton().size();
 
     }
 
@@ -101,23 +88,36 @@ public class GameInstance {
     public void rate() {
         this.gameOver = false;
         int rate = 0;
+        int countNoir = 0;
+        int countBlanc = 0;
         ArrayList<Jeton> listeJetonNoir = Jnoir.getListeJeton();
         int maxNoir = 0;
         for (Jeton j : listeJetonNoir) {
             int nbPieceN = nbPieceConnecte(2, j.getPosX(), j.getPosY(), new boolean[8][8]);
+            if (nbPieceN >= 1) {
+                countNoir++;
+            }
             if (maxNoir < nbPieceN) {
                 maxNoir = nbPieceN;
             }
         }
 
+        maxNoir = maxNoir + countNoir - 1;
+
         ArrayList<Jeton> listeJetonBlanc = Jblanc.getListeJeton();
         int maxBlanc = 0;
         for (Jeton j : listeJetonBlanc) {
             int nbPieceB = nbPieceConnecte(4, j.getPosX(), j.getPosY(), new boolean[8][8]);
+            if (nbPieceB >= 1) {
+                countBlanc++;
+            }
             if (maxBlanc < nbPieceB) {
                 maxBlanc = nbPieceB;
             }
         }
+
+        maxBlanc = maxBlanc + countBlanc - 1;
+
         for (int i = 0; i < grid.length; i++) {
             for (int j = 0; j < grid[i].length; j++) {
                 int tempN = calculSquare(2, i, j);
@@ -133,6 +133,22 @@ public class GameInstance {
 
         // Blanc doit toujours avec le plus de + grand nombre et noir le plus petit
         rate = maxBlanc - maxNoir;
+
+        switch (calculVictoire()) {
+            case 0:
+                // Rien
+                break;
+            case 1: // Victoire blanc
+                rate = 1000000;
+                gameOver = true;
+                System.out.println("VICTOIRE BLANCHE EN VUE");
+                break;
+            case 2: // Victoire noir
+                rate = -1000000;
+                gameOver = true;
+                System.out.println("VICTOIRE NOIRE EN VUE");
+                break;
+        }
 
         this.score = rate;
 

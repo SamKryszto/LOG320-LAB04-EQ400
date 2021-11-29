@@ -89,12 +89,7 @@ public class App {
 					} else {
 						board[x2][y2] = 4;
 					}
-					for (int i = 0; i < board.length; i++) {
-						for (int j = 0; j < board[i].length; j++) {
-							System.out.print(board[i][j]);
-						}
-						System.out.println("");
-					}
+
 					newInst = new GameInstance(board, isWhite, move);
 
 					output.write(move.getBytes(), 0, move.length());
@@ -154,12 +149,6 @@ public class App {
 					String a = c1 + "" + r1 + "" + c2 + "" + r2;
 					newInst = new GameInstance(board, isWhite, a);
 
-					for (int i = 0; i < board.length; i++) {
-						for (int j = 0; j < board[i].length; j++) {
-							System.out.print(board[i][j]);
-						}
-						System.out.println("");
-					}
 					System.out.println("Entrez votre coup : ");
 					String move = null;
 					move = app.getBestMoveWithTimeAllowed(newInst, isWhite);
@@ -182,12 +171,7 @@ public class App {
 					} else {
 						board[x2][y2] = 4;
 					}
-					for (int i = 0; i < board.length; i++) {
-						for (int j = 0; j < board[i].length; j++) {
-							System.out.print(board[i][j]);
-						}
-						System.out.println("");
-					}
+
 					newInst = new GameInstance(board, !isWhite, move);
 
 					output.flush();
@@ -223,16 +207,16 @@ public class App {
 	public String getBestMoveWithTimeAllowed(GameInstance gameInstance, boolean isMaxPlayer) {
 
 		startTime = System.nanoTime();
-		int score = minimax(gameInstance, isMaxPlayer, -100000000, 100000000);
+		int score = minimax(gameInstance, isMaxPlayer, 4, -100000000, 100000000);
 		return gameInstance.getNextMove(score);
 	}
 
 	// Minimax + alpha-beta pruning
-	public int minimax(GameInstance gameInstance, boolean isMaxPlayer, int alpha, int beta) {
+	public int minimax(GameInstance gameInstance, boolean isMaxPlayer, int depth, int alpha, int beta) {
 
-		boolean timesUp = ((System.nanoTime() - startTime) > timeAllowed);
+		// boolean timesUp = ((System.nanoTime() - startTime) > timeAllowed);
 
-		if (timesUp || gameInstance.gameIsOver()) {
+		if (depth <= 0 || gameInstance.gameIsOver()) {
 			if (!gameInstance.gameIsOver()) {
 				gameInstance.rate();
 			}
@@ -241,12 +225,11 @@ public class App {
 		}
 		gameInstance.generateChildren();
 		ArrayList<GameInstance> children = gameInstance.getChildren();
-		System.out.println(children.size());
 		if (isMaxPlayer) {
 			int maxRating = -1000000000;
 			for (int i = 0; i < children.size(); i++) {
 				GameInstance child = children.get(i);
-				int eval = minimax(child, false, alpha, beta);
+				int eval = minimax(child, !isMaxPlayer, depth - 1, alpha, beta);
 				maxRating = Math.max(maxRating, eval);
 				gameInstance.setScore(maxRating);
 				alpha = Math.max(eval, alpha);
@@ -260,7 +243,7 @@ public class App {
 			int minRating = 1000000000;
 			for (int i = 0; i < children.size(); i++) {
 				GameInstance child = children.get(i);
-				int eval = minimax(child, true, alpha, beta);
+				int eval = minimax(child, !isMaxPlayer, depth - 1, alpha, beta);
 				minRating = Math.min(minRating, eval);
 				gameInstance.setScore(minRating);
 				beta = Math.min(eval, beta);
