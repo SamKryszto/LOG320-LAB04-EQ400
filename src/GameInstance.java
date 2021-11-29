@@ -102,7 +102,7 @@ public class GameInstance {
             }
         }
 
-        maxNoir = maxNoir + countNoir - 1;
+        maxNoir = maxNoir - countNoir - 1;
 
         ArrayList<Jeton> listeJetonBlanc = Jblanc.getListeJeton();
         int maxBlanc = 0;
@@ -116,20 +116,22 @@ public class GameInstance {
             }
         }
 
-        maxBlanc = maxBlanc + countBlanc - 1;
+        maxBlanc = maxBlanc - countBlanc - 1;
 
-        for (int i = 0; i < grid.length; i++) {
-            for (int j = 0; j < grid[i].length; j++) {
-                int tempN = calculSquare(2, i, j);
-                int tempB = calculSquare(4, i, j);
-                if (tempN >= 4) {
-                    maxNoir++;
-                }
-                if (tempB >= 4) {
-                    maxBlanc++;
-                }
-            }
-        }
+        /**
+         * for (int i = 0; i < grid.length; i++) {
+         * for (int j = 0; j < grid[i].length; j++) {
+         * int tempN = calculSquare(2, i, j);
+         * int tempB = calculSquare(4, i, j);
+         * if (tempN >= 4) {
+         * maxNoir++;
+         * }
+         * if (tempB >= 4) {
+         * maxBlanc++;
+         * }
+         * }
+         * }
+         */
 
         // Blanc doit toujours avec le plus de + grand nombre et noir le plus petit
         rate = maxBlanc - maxNoir;
@@ -419,10 +421,12 @@ public class GameInstance {
                                     int newNbBlancs = nbBlancs;
                                     int newNbNoirs = nbNoirs;
                                     // si emplacement d'arrivée a un jeton adverse, on l'enlève.
+                                    int newScore = 0;
                                     if (grid[newX][newY] == jetonAdverseID) {
                                         if (tourDeBlanc) {
                                             newNbNoirs--;
                                             Jnoir.retraitJeton(newX, newY);
+
                                         } else {
                                             newNbBlancs--;
                                             Jblanc.retraitJeton(newX, newY);

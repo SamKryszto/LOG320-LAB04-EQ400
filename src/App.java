@@ -207,7 +207,7 @@ public class App {
 	public String getBestMoveWithTimeAllowed(GameInstance gameInstance, boolean isMaxPlayer) {
 
 		startTime = System.nanoTime();
-		int score = minimax(gameInstance, isMaxPlayer, 4, -100000000, 100000000);
+		int score = minimax(gameInstance, isMaxPlayer, 5, -100000000, 100000000);
 		return gameInstance.getNextMove(score);
 	}
 
