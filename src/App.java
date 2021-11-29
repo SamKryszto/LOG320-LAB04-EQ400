@@ -55,6 +55,30 @@ public class App {
 					input.read(aBuffer, 0, size);
 					String s = new String(aBuffer).trim();
 					System.out.println(s);
+
+					long bitBoardBlancs = 0L;
+					long bitBoardNoirs = 0L;
+
+					for (int i = 0; i < s.length(); i++) {
+						char c = s.charAt(i);
+						if (c == '2') {
+							bitBoardNoirs = bitBoardNoirs * 2 + 1;
+							bitBoardBlancs = bitBoardBlancs * 2;
+						}
+						else if (c == '4'){
+							bitBoardNoirs = bitBoardNoirs * 2;
+							bitBoardBlancs = bitBoardBlancs * 2 + 1;
+						}
+						else if (c == ' '){}
+						else {
+							bitBoardNoirs = bitBoardNoirs * 2;
+							bitBoardBlancs = bitBoardBlancs * 2;
+						}
+						
+					}
+					System.out.println(Long.toBinaryString(bitBoardBlancs));
+					System.out.println(Long.toBinaryString(bitBoardNoirs));
+
 					String[] boardValues = s.split(" ");
 					int x = 0, y = 0;
 					for (int i = 0; i < boardValues.length; i++) {
@@ -78,6 +102,7 @@ public class App {
 					r2 = move.charAt(4);
 					c2 = move.charAt(3);
 					System.out.println("Move : " + r1 + "/" + c1 + "," + r2 + "/" + c2);
+					
 					x1 = 8 - Character.getNumericValue(r1);
 					y1 = (char) (c1 - 65);
 					x2 = 8 - Character.getNumericValue(r2);
