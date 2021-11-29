@@ -76,8 +76,8 @@ public class App {
 						}
 						
 					}
-					System.out.println(Long.toBinaryString(bitBoardBlancs));
-					System.out.println(Long.toBinaryString(bitBoardNoirs));
+					// System.out.println(Long.toBinaryString(bitBoardBlancs));
+					// System.out.println(Long.toBinaryString(bitBoardNoirs));
 
 					String[] boardValues = s.split(" ");
 					int x = 0, y = 0;
@@ -95,6 +95,8 @@ public class App {
 					System.out.println("Nouvelle partie! Vous jouez blanc, entrez votre premier coup : ");
 					String move = null;
 					isWhite = true;
+
+					currentGameState = new GameInstance(bitBoardBlancs, bitBoardNoirs, isWhite, null, 12, 12, null);
 
 					move = app.getBestMoveWithTimeAllowed(currentGameState, isWhite);
 					r1 = move.charAt(2);

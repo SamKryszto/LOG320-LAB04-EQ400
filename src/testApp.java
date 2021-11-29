@@ -10,8 +10,6 @@ public class testApp {
         { 4, 0, 0, 0, 2, 0, 0, 4 }, { 4, 2, 0, 0, 0, 0, 0, 4 }, { 4, 0, 2, 4, 0, 0, 0, 0 },
         { 0, 0, 4, 2, 0, 0, 0, 4 }, { 0, 2, 0, 0, 2, 2, 2, 0 } };
 
-        long testLong = 0b1111111111111111111111111111111111111111111111111111111111111111L;
-        testLong = ((testLong >>> (64 - (24 - 1))) << 33);
         int[][] gridTest = gridRando;
         // System.out.println(Long.toBinaryString(bitBoardNoirs));
         testGenerateChildren();
@@ -58,14 +56,14 @@ public class testApp {
     public static void testGenerateChildren() {
         GameInstance gameInit = new GameInstance();
         int[][] gridTest = new int[][] { 
-        { 4, 4, 4, 4, 4, 4, 4, 4 },
+        { 0, 2, 2, 2, 2, 2, 2, 0 },
         { 4, 0, 0, 0, 0, 0, 0, 4 }, 
         { 4, 0, 0, 0, 0, 0, 0, 4 },
         { 4, 0, 0, 0, 0, 0, 0, 4 },
         { 4, 0, 0, 0, 0, 0, 0, 4 },
         { 4, 0, 0, 0, 0, 0, 0, 4 },
         { 4, 0, 0, 0, 0, 0, 0, 4 },
-        { 4, 4, 4, 4, 4, 4, 4, 4 }}; 
+        { 0, 2, 2, 2, 2, 2, 2, 0 }}; 
 
         long bitBoardBlancs = 0L;
         long bitBoardNoirs = 0L;
