@@ -11,8 +11,10 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 public class App {
 
 	static private boolean isWhite;
-	public long timeStart;
-	public long timeDelay = 4500;
+	private long timeStart;
+	private long timeDelay = 4950;
+	private int countDepth;
+	private int depth = 4;
 
 	/**
 	 * order of operations :
@@ -43,8 +45,7 @@ public class App {
 		long[] newBitBoards;
 
 		GameInstance currentGameState = new GameInstance();
-		GameInstance newInst;
-		int[][] board = new int[8][8];
+		GameInstance newInst = new GameInstance();
 		try {
 			MyClient = new Socket("localhost", 8888);
 
@@ -66,30 +67,28 @@ public class App {
 					String s = new String(aBuffer).trim();
 					System.out.println(s);
 
-					for (int i = 0; i < s.length(); i+=2) {
-						char c = s.charAt(i);
-						if (c == '2') {
-							bitBoardAdverse = bitBoardAdverse * 2 + 1;
-							bitBoardAllie = bitBoardAllie * 2;
-						}
-						else if (c == '4'){
-							bitBoardAdverse = bitBoardAdverse * 2;
-							bitBoardAllie = bitBoardAllie * 2 + 1;
-						}
-						else {
-							bitBoardAdverse = bitBoardAdverse * 2;
-							bitBoardAllie = bitBoardAllie * 2;
-						}
+					// for (int i = 0; i < s.length(); i+=2) {
+					// 	char c = s.charAt(i);
+					// 	if (c == '2') {
+					// 		bitBoardAdverse = bitBoardAdverse * 2 + 1;
+					// 		bitBoardAllie = bitBoardAllie * 2;
+					// 	}
+					// 	else if (c == '4'){
+					// 		bitBoardAdverse = bitBoardAdverse * 2;
+					// 		bitBoardAllie = bitBoardAllie * 2 + 1;
+					// 	}
+					// 	else {
+					// 		bitBoardAdverse = bitBoardAdverse * 2;
+					// 		bitBoardAllie = bitBoardAllie * 2;
+					// 	}
 						
-					}
+					// }
 					// System.out.println(Long.toBinaryString(bitBoardBlancs));
 					// System.out.println(Long.toBinaryString(bitBoardNoirs));
 
 					System.out.println("Nouvelle partie! Vous jouez blanc, entrez votre premier coup : ");
 					String move = null;
 					isWhite = true;
-
-					currentGameState = new GameInstance(bitBoardAllie, bitBoardAdverse, isWhite, null, 12, 12, null);
 
 					newInst = app.getBestMoveWithTimeAllowed(currentGameState, isWhite);
 					move = newInst.getLastMoveString();
@@ -98,8 +97,6 @@ public class App {
 					r2 = move.charAt(3);
 					c2 = move.charAt(2);
 					System.out.println("Move : " + newInst.getLastMoveString());
-
-					newInst = new GameInstance(newInst.getBitBoardBlancs(), newInst.getBitBoardNoirs(), isWhite, newInst.getLastMoveString());
 
 					output.write(move.getBytes(), 0, move.length());
 					output.flush();
@@ -148,9 +145,9 @@ public class App {
 					c2 = s.charAt(6);
 
 					x1 = (Character.getNumericValue(r1) - 1) * 8;
-					y1 = 8 - ((int)(c1 - 65));
+					y1 = 8 - ((int)(c1 - 65) + 1);
 					x2 = (Character.getNumericValue(r2) - 1) * 8;
-					y2 = 8 - ((int)(c2 - 65));
+					y2 = 8 - ((int)(c2 - 65) + 1);
 					xy1 = x1 + y1;
 					xy2 = x2 + y2;
 
@@ -160,6 +157,32 @@ public class App {
 
 					bitBoardAdverse = newBitBoards[0];
 					bitBoardAllie = newBitBoards[1];
+
+					// ArrayList<GameInstance> children = newInst.getChildren();
+					// boolean found;
+					// if (isWhite) {
+					// 	for (int i = 0; i < children.size(); i++) {
+					// 		found = children.get(i).compareGrids(bitBoardAllie,bitBoardAdverse);
+					// 		if (found) {
+					// 			newInst = children.get(i);
+
+					// 		} else {
+					// 			newInst = new GameInstance(bitBoardAllie, bitBoardAdverse, !isWhite, Masks.getMovementCode(xy1, xy2));
+					// 		}
+					// 	}
+					// }
+					// else {
+					// 	for (int i = 0; i < children.size(); i++) {
+					// 		found = children.get(i).compareGrids(bitBoardAdverse, bitBoardAllie);
+					// 		if (found) {
+					// 			newInst = children.get(i);
+	
+					// 		} else {
+					// 			newInst = new GameInstance(bitBoardAdverse, bitBoardAllie, !isWhite, Masks.getMovementCode(xy1, xy2));
+					// 		}
+					// 	}
+					// }
+					
 
 					if (isWhite) {
 						newInst = new GameInstance(bitBoardAllie, bitBoardAdverse, isWhite, Masks.getMovementCode(xy1, xy2));
@@ -174,19 +197,8 @@ public class App {
 					move = newInst.getLastMoveString();
 					output.write(move.getBytes(), 0, move.length());
 
-					r1 = move.charAt(1);
-					c1 = move.charAt(0);
-					r2 = move.charAt(3);
-					c2 = move.charAt(2);
-
-					System.out.println("Move : " + r1 + "/" + c1 + "," + r2 + "/" + c2);
-					x1 = 8 - Character.getNumericValue(r1);
-					y1 = (char) (c1 - 65);
-					x2 = 8 - Character.getNumericValue(r2);
-					y2 = (char) (c2 - 65);
-
-					newInst = new GameInstance(newInst.getBitBoardBlancs(), newInst.getBitBoardNoirs(), !isWhite, move);
-
+					System.out.println("Notre Move : " + move);
+					
 					output.flush();
 				}
 				// Le dernier coup est invalide
@@ -221,7 +233,8 @@ public class App {
 	public GameInstance getBestMoveWithTimeAllowed(GameInstance gameInstance, boolean isMaxPlayer) {
 
 		timeStart = System.currentTimeMillis();
-		int score = minimax(gameInstance, isMaxPlayer, 5, -100000000, 100000000);
+
+		int score = minimax(gameInstance, isMaxPlayer, depth, -100000000, 100000000);
 
 		return gameInstance.getNextMove(score);
 	}
@@ -237,8 +250,10 @@ public class App {
 			return gameInstance.getScore();
 
 		}
-		gameInstance.generateChildren();
 		ArrayList<GameInstance> children = gameInstance.getChildren();
+		if (children.size() <= 0) {
+			gameInstance.generateChildren();
+		}
 		if (isMaxPlayer) {
 			int maxRating = -1000000000;
 
