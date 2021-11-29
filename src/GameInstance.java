@@ -103,6 +103,7 @@ public class GameInstance {
         int countBlanc = 0;
         ArrayList<Jeton> listeJetonNoir = Jnoir.getListeJeton();
         int heatScoreNoir = 0;
+        int minNoir = 12;
         boolean[][] tabVerNo= new boolean[8][8];
         for (Jeton j : listeJetonNoir) {
             heatScoreNoir += heatmap[j.getPosX()][j.getPosY()];
@@ -110,13 +111,16 @@ public class GameInstance {
             if (nbPieceN >= 1) {
                 countNoir++;
             }
-           
+            if (nbPieceN < minNoir){
+                minNoir = nbPieceN;
+            }
         }
 
-        countNoir = - 10 * (countNoir - 1) + heatScoreNoir;
+        
 
         ArrayList<Jeton> listeJetonBlanc = Jblanc.getListeJeton();
         int heatScoreBlanc = 0;
+        int minBlanc = 12;
         boolean[][] tabVerBl= new boolean[8][8];
         for (Jeton j : listeJetonBlanc) {
             int nbPieceB = nbPieceConnecte(4, j.getPosX(), j.getPosY(), tabVerBl);
@@ -124,11 +128,28 @@ public class GameInstance {
             if (nbPieceB >= 1) {
                 countBlanc++;
             }
-           
+            if (nbPieceB < minBlanc){
+                minBlanc = nbPieceB;
+            }
+        }
+        
+        if (countNoir != 1 && countBlanc == 1){
+            rate = 1000000;
+                System.out.println("VICTOIRE ROUGE EN VUE");
+                gameOver = true;
+        }
+        else if (countNoir == 1 && countBlanc != 1) {
+                rate = -1000000;
+                System.out.println("VICTOIRE NOIRE EN VUE");
+                gameOver = true;
+        }
+        else {
+            countNoir = -3 * countNoir - minNoir + heatScoreNoir;
+            countBlanc = -3 * countBlanc - minBlanc + heatScoreBlanc ;
+            rate = countBlanc - countNoir;
         }
 
-        countBlanc = - 10 * (countBlanc - 1) + heatScoreBlanc ;
-
+        
         /**
          * for (int i = 0; i < grid.length; i++) {
          * for (int j = 0; j < grid[i].length; j++) {
@@ -145,42 +166,28 @@ public class GameInstance {
          */
 
         // Blanc doit toujours avec le plus de + grand nombre et noir le plus petit
-        rate = countBlanc - countNoir;
+        
 
-        switch (calculVictoire()) {
-            case 0:
-                // Rien
-                break;
-            case 1: // Victoire blanc
-                rate = 1000000;
-                System.out.println("VICTOIRE ROUGE EN VUE");
-                gameOver = true;
-                break;
-            case 2: // Victoire noir
-                rate = -1000000;
-                System.out.println("VICTOIRE NOIRE EN VUE");
-                gameOver = true;
-                break;
-        }
+        
 
         this.score = rate;
 
     }
 
-    public int calculVictoire() {
+    // public int calculVictoire() {
 
-        if (nbPieceConnecte(4, Jblanc.getListeJeton().get(0).getPosX(), Jblanc.getListeJeton().get(0).getPosY(),
-                new boolean[8][8]) == nbBlancs) {
-            return 1;
-        }
+    //     if (nbPieceConnecte(4, Jblanc.getListeJeton().get(0).getPosX(), Jblanc.getListeJeton().get(0).getPosY(),
+    //             new boolean[8][8]) == nbBlancs) {
+    //         return 1;
+    //     }
 
-        if (nbPieceConnecte(2, Jnoir.getListeJeton().get(0).getPosX(), Jnoir.getListeJeton().get(0).getPosY(),
-                new boolean[8][8]) == nbNoirs) {
-            return 2;
-        }
+    //     if (nbPieceConnecte(2, Jnoir.getListeJeton().get(0).getPosX(), Jnoir.getListeJeton().get(0).getPosY(),
+    //             new boolean[8][8]) == nbNoirs) {
+    //         return 2;
+    //     }
 
-        return 0;
-    }
+    //     return 0;
+    // }
 
     public int nbPieceConnecte(int joueur, int row, int col, boolean[][] verifiedGrid) {
         if (row < 0 || row > 7 || col < 0 || col > 7 || grid[row][col] != joueur || verifiedGrid[row][col]) {
