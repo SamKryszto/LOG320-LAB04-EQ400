@@ -179,9 +179,17 @@ public class App {
 						board[x2][y2] = 4;
 					}
 					//
+					ArrayList<GameInstance> children = newInst.getChildren();
+					boolean found;
+					for (int i = 0; i < children.size(); i++) {
+						found = children.get(i).compareGrids(board);
+						if (found) {
+							newInst = children.get(i);
 
-					newInst = new GameInstance(board, !isWhite, move);
-
+						} else {
+							newInst = new GameInstance(board, !isWhite, move);
+						}
+					}
 					output.flush();
 				}
 				// Le dernier coup est invalide
@@ -232,8 +240,10 @@ public class App {
 			return gameInstance.getScore();
 
 		}
-		gameInstance.generateChildren();
 		ArrayList<GameInstance> children = gameInstance.getChildren();
+		if (children.size() <= 0) {
+			gameInstance.generateChildren();
+		}
 		if (isMaxPlayer) {
 			int maxRating = -1000000000;
 
