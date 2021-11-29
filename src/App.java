@@ -39,7 +39,8 @@ public class App {
 		int x2;
 		int y2;
 
-		GameInstance newInst = new GameInstance();
+		GameInstance currentGameState = new GameInstance();
+		GameInstance newInst;
 		int[][] board = new int[8][8];
 		try {
 			MyClient = new Socket("localhost", 8888);
@@ -78,7 +79,7 @@ public class App {
 					String move = null;
 					isWhite = true;
 
-					move = app.getBestMoveWithTimeAllowed(newInst, isWhite);
+					move = app.getBestMoveWithTimeAllowed(currentGameState, isWhite);
 					r1 = move.charAt(2);
 					c1 = move.charAt(1);
 					r2 = move.charAt(4);
@@ -190,6 +191,17 @@ public class App {
 						board[x2][y2] = 4;
 					}
 					//
+					ArrayList<GameInstance> children = newInst.getChildren();
+					boolean found;
+					for (int i = 0; i < children.size(); i++) {
+						found = children.get(i).compareGrids(board);
+						if (found) {
+							newInst = children.get(i);
+
+						} else {
+							newInst = new GameInstance(board, !isWhite, move);
+						}
+					}
 					output.flush();
 				}
 				// Le dernier coup est invalide
@@ -197,7 +209,7 @@ public class App {
 					System.exit(0);
 					System.out.println("Coup invalide, entrez un nouveau coup : ");
 					String move = null;
-					move = app.getBestMoveWithTimeAllowed(newInst, isWhite);
+					move = app.getBestMoveWithTimeAllowed(currentGameState, isWhite);
 					output.write(move.getBytes(), 0, move.length());
 					output.flush();
 
