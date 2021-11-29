@@ -154,19 +154,19 @@ public class App {
 					}
 					String a = c1 + "" + r1 + "" + c2 + "" + r2;
 					
-					ArrayList<GameInstance> children = newInst.getChildren();
-					boolean found = false;
-					for (int i = 0; i < children.size(); i++) {
-						found = children.get(i).compareGrids(board);
-						if (found) {
-							newInst = children.get(i);
-							break;
+					// ArrayList<GameInstance> children = newInst.getChildren();
+					// boolean found = false;
+					// for (int i = 0; i < children.size(); i++) {
+					// 	found = children.get(i).compareGrids(board);
+					// 	if (found) {
+					// 		newInst = children.get(i);
+					// 		break;
 
-						} 
-					}
-					if (!found) {
+					// 	} 
+					// }
+					// if (!found) {
 						newInst = new GameInstance(board, isWhite, a);
-					}
+					// }
 					System.out.println("Entrez votre coup : ");
 					String move = null;
 					move = app.getBestMoveWithTimeAllowed(newInst, isWhite);
@@ -224,11 +224,19 @@ public class App {
 
 		timeStart = System.currentTimeMillis();
 		int score = 0;
+		int i = 0;
 
-		for (int i = 0; i < depth; i ++){
+		while (i < depth && !gameInstance.gameIsOver()){
 			System.out.println(("depth : " + i));
 			score = minimax(gameInstance, isMaxPlayer, i, -100000000, 100000000);
 			System.out.println("score : " + score);
+			if (gameInstance.getTurn() && score == 1000000) {
+				return gameInstance.getNextMove(score);
+			}
+			else if (!gameInstance.getTurn() && score == -1000000) {
+				return gameInstance.getNextMove(score);
+			}
+			i++;
 		}
 		return gameInstance.getNextMove(score);
 	}
