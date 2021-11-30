@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="LOG320-LAB04-EQ400:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/LOG320_LAB04_EQ400_jar</output-path>
+    <root id="archive" name="LOG320-LAB04-EQ400.jar">
+      <element id="module-output" name="LOG320-LAB04-EQ400" />
+    </root>
+  </artifact>
+</component>
